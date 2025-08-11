@@ -25,31 +25,37 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await api.post<MyResponse<User>>(endpoints.login, credentials);
+      // Demo mode - simulate successful login with any credentials
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call delay
       
-      if (response.data.success) {
-        const userData = response.data.data;
-        const token = 'demo-token'; // The backend should return a JWT token
-        
-        login(userData, token);
-        
-        toast({
-          title: 'Connexion réussie',
-          description: `Bienvenue ${userData.prenom} ${userData.nom}`,
-        });
-        
-        navigate('/dashboard');
-      } else {
-        toast({
-          title: 'Erreur de connexion',
-          description: response.data.message || 'Identifiants invalides',
-          variant: 'destructive',
-        });
-      }
+      const demoUser: User = {
+        id: '1',
+        username: credentials.username,
+        email: 'demo@sofisoft.com',
+        nom: 'Utilisateur',
+        prenom: 'Demo',
+        role: 'Administrateur',
+        magasins: [
+          { code: 'MAG001', nom: 'Magasin Centre-Ville', adresse: '123 Rue de la Paix', telephone: '01 23 45 67 89', email: 'centre@sofisoft.com' },
+          { code: 'MAG002', nom: 'Magasin Banlieue', adresse: '456 Avenue des Champs', telephone: '01 98 76 54 32', email: 'banlieue@sofisoft.com' },
+          { code: 'MAG003', nom: 'Magasin Sud', adresse: '789 Boulevard du Midi', telephone: '04 11 22 33 44', email: 'sud@sofisoft.com' }
+        ]
+      };
+      
+      const token = 'demo-token-' + Date.now();
+      
+      login(demoUser, token);
+      
+      toast({
+        title: 'Connexion réussie',
+        description: `Bienvenue ${demoUser.prenom} ${demoUser.nom}`,
+      });
+      
+      navigate('/dashboard');
     } catch (error: any) {
       toast({
         title: 'Erreur de connexion',
-        description: error.response?.data?.message || 'Une erreur est survenue',
+        description: 'Une erreur est survenue lors de la connexion',
         variant: 'destructive',
       });
     } finally {

@@ -31,18 +31,30 @@ export const Dashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [dashboardResponse, evolutionResponse] = await Promise.all([
-        api.get<MyResponse<DashboardModel[]>>(endpoints.dashboardMagasins),
-        api.get<MyResponse<EvolutionCAModel[]>>(endpoints.evolutionCA)
-      ]);
-
-      if (dashboardResponse.data.success) {
-        setDashboardData(dashboardResponse.data.data);
-      }
-
-      if (evolutionResponse.data.success) {
-        setEvolutionData(evolutionResponse.data.data);
-      }
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Demo data
+      const demoStoreData: DashboardModel[] = [
+        { magasinCode: 'MAG001', magasinNom: 'Magasin Centre-Ville', ca: 125000, tickets: 3456, quantite: 12890, prixMoyen: 36.15, panierMoyen: 52.30, periode: '2024-01' },
+        { magasinCode: 'MAG002', magasinNom: 'Magasin Banlieue', ca: 98500, tickets: 2987, quantite: 9876, prixMoyen: 32.98, panierMoyen: 48.75, periode: '2024-01' },
+        { magasinCode: 'MAG003', magasinNom: 'Magasin Sud', ca: 156800, tickets: 4123, quantite: 15467, prixMoyen: 38.42, panierMoyen: 55.20, periode: '2024-01' }
+      ];
+      
+      const demoEvolutionData: EvolutionCAModel[] = [
+        { date: '2024-01-20', montant: 4500 },
+        { date: '2024-01-21', montant: 5200 },
+        { date: '2024-01-22', montant: 4800 },
+        { date: '2024-01-23', montant: 6100 },
+        { date: '2024-01-24', montant: 5800 },
+        { date: '2024-01-25', montant: 7200 },
+        { date: '2024-01-26', montant: 6800 },
+        { date: '2024-01-27', montant: 5900 }
+      ];
+      
+      setDashboardData(demoStoreData);
+      setEvolutionData(demoEvolutionData);
+      
     } catch (error: any) {
       toast({
         title: 'Erreur',

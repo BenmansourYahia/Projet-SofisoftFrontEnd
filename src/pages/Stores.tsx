@@ -32,22 +32,21 @@ export const Stores: React.FC = () => {
 
   const fetchStoresData = async () => {
     try {
-      // Get stores list
-      const storesResponse = await api.post<MyResponse<Magasin[]>>(endpoints.getMagasins, {});
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Get stores performance info
-      const infosResponse = await api.post<MyResponse<MagasinInfo[]>>(endpoints.getMagasinsInfos, {
-        dateDebut: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        dateFin: new Date().toISOString().split('T')[0]
-      });
+      // Demo data - use the same stores from user context
+      const demoStores: Magasin[] = user?.magasins || [];
+      
+      const demoStoreInfos: MagasinInfo[] = [
+        { code: 'MAG001', nom: 'Magasin Centre-Ville', ca: 125000, tickets: 3456, quantite: 12890, prixMoyen: 36.15, panierMoyen: 52.30, dateDebut: '2024-01-01', dateFin: '2024-01-31' },
+        { code: 'MAG002', nom: 'Magasin Banlieue', ca: 98500, tickets: 2987, quantite: 9876, prixMoyen: 32.98, panierMoyen: 48.75, dateDebut: '2024-01-01', dateFin: '2024-01-31' },
+        { code: 'MAG003', nom: 'Magasin Sud', ca: 156800, tickets: 4123, quantite: 15467, prixMoyen: 38.42, panierMoyen: 55.20, dateDebut: '2024-01-01', dateFin: '2024-01-31' }
+      ];
 
-      if (storesResponse.data.success) {
-        setStores(storesResponse.data.data);
-      }
-
-      if (infosResponse.data.success) {
-        setStoreInfos(infosResponse.data.data);
-      }
+      setStores(demoStores);
+      setStoreInfos(demoStoreInfos);
+      
     } catch (error: any) {
       toast({
         title: 'Erreur',
