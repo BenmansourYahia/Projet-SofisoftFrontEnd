@@ -30,7 +30,7 @@ export const Stock: React.FC = () => {
   
   const [globalStock, setGlobalStock] = useState<StockItem[]>([]);
   const [productStock, setProductStock] = useState<StockItem | null>(null);
-  const [selectedStore, setSelectedStore] = useState<string>('');
+  const [selectedStore, setSelectedStore] = useState<string>('all');
   const [stockFilter, setStockFilter] = useState<'ALL' | 'POSITIVE' | 'ZERO' | 'NEGATIVE'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchProduct, setSearchProduct] = useState('');
@@ -41,7 +41,7 @@ export const Stock: React.FC = () => {
     setLoading(true);
     try {
       const response = await api.post<MyResponse<StockItem[]>>(endpoints.globalStock, {
-        magasinCode: selectedStore || undefined,
+        magasinCode: selectedStore === 'all' ? undefined : selectedStore,
         stockFilter,
         withDimensions: true
       });
@@ -68,7 +68,7 @@ export const Stock: React.FC = () => {
       const response = await api.post<MyResponse<StockItem>>(endpoints.stockByProduct, {
         codeProduit: searchProduct,
         codeBarres: searchProduct,
-        magasinCode: selectedStore || undefined
+        magasinCode: selectedStore === 'all' ? undefined : selectedStore
       });
 
       if (response.data.success) {
@@ -138,7 +138,7 @@ export const Stock: React.FC = () => {
                 <SelectValue placeholder="Sélectionner un magasin" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous les magasins</SelectItem>
+                <SelectItem value="all">Tous les magasins</SelectItem>
                 {user?.magasins?.map((magasin) => (
                   <SelectItem key={magasin.code} value={magasin.code}>
                     {magasin.nom}
