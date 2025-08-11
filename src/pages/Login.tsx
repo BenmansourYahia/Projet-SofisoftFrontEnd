@@ -25,37 +25,36 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      // Demo mode - simulate successful login with any credentials
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call delay
-      
-      const demoUser: User = {
-        id: '1',
+      // Real API call to backend
+      const response = await api.post<MyResponse<User>>(endpoints.login, {
         username: credentials.username,
-        email: 'demo@sofisoft.com',
-        nom: 'Utilisateur',
-        prenom: 'Demo',
-        role: 'Administrateur',
-        magasins: [
-          { code: 'MAG001', nom: 'Magasin Centre-Ville', adresse: '123 Rue de la Paix', telephone: '01 23 45 67 89', email: 'centre@sofisoft.com' },
-          { code: 'MAG002', nom: 'Magasin Banlieue', adresse: '456 Avenue des Champs', telephone: '01 98 76 54 32', email: 'banlieue@sofisoft.com' },
-          { code: 'MAG003', nom: 'Magasin Sud', adresse: '789 Boulevard du Midi', telephone: '04 11 22 33 44', email: 'sud@sofisoft.com' }
-        ]
-      };
-      
-      const token = 'demo-token-' + Date.now();
-      
-      login(demoUser, token);
-      
-      toast({
-        title: 'Connexion réussie',
-        description: `Bienvenue ${demoUser.prenom} ${demoUser.nom}`,
+        password: credentials.password
       });
-      
-      navigate('/dashboard');
+
+      if (response.data.success) {
+        const user = response.data.data;
+        const token = response.headers.authorization?.replace('Bearer ', '') || 'token-' + Date.now();
+        
+        login(user, token);
+        
+        toast({
+          title: 'Connexion réussie',
+          description: `Bienvenue ${user.prenom} ${user.nom}`,
+        });
+        
+        navigate('/dashboard');
+      } else {
+        toast({
+          title: 'Échec de connexion',
+          description: response.data.message || 'Identifiants incorrects',
+          variant: 'destructive',
+        });
+      }
     } catch (error: any) {
+      console.error('Login API Error:', error);
       toast({
         title: 'Erreur de connexion',
-        description: 'Une erreur est survenue lors de la connexion',
+        description: error.response?.data?.message || 'Une erreur est survenue lors de la connexion',
         variant: 'destructive',
       });
     } finally {

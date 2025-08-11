@@ -9,6 +9,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Stores from "./pages/Stores";
 import Stock from "./pages/Stock";
+import Sales from "./pages/Sales";
+import ProductDimensions from "./pages/ProductDimensions";
 import Comparateur from "./pages/Comparateur";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -42,6 +44,16 @@ const App = () => (
             <Route path="/stock" element={
               <ProtectedRoute>
                 <Stock />
+              </ProtectedRoute>
+            } />
+            <Route path="/sales" element={
+              <ProtectedRoute>
+                <Sales />
+              </ProtectedRoute>
+            } />
+            <Route path="/product-dimensions" element={
+              <ProtectedRoute>
+                <ProductDimensions />
               </ProtectedRoute>
             } />
             <Route path="/comparateur" element={

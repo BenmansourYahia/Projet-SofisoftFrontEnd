@@ -32,27 +32,38 @@ export const Stores: React.FC = () => {
 
   const fetchStoresData = async () => {
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      setLoading(true);
       
-      // Demo data - use the same stores from user context
-      const demoStores: Magasin[] = user?.magasins || [];
+      // Fetch stores list
+      const storesResponse = await api.post<MyResponse<Magasin[]>>(endpoints.getMagasins, {});
       
-      const demoStoreInfos: MagasinInfo[] = [
-        { code: 'MAG001', nom: 'Magasin Centre-Ville', ca: 125000, tickets: 3456, quantite: 12890, prixMoyen: 36.15, panierMoyen: 52.30, dateDebut: '2024-01-01', dateFin: '2024-01-31' },
-        { code: 'MAG002', nom: 'Magasin Banlieue', ca: 98500, tickets: 2987, quantite: 9876, prixMoyen: 32.98, panierMoyen: 48.75, dateDebut: '2024-01-01', dateFin: '2024-01-31' },
-        { code: 'MAG003', nom: 'Magasin Sud', ca: 156800, tickets: 4123, quantite: 15467, prixMoyen: 38.42, panierMoyen: 55.20, dateDebut: '2024-01-01', dateFin: '2024-01-31' }
-      ];
-
-      setStores(demoStores);
-      setStoreInfos(demoStoreInfos);
+      // Fetch store information for current month
+      const currentDate = new Date();
+      const dateDebut = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0];
+      const dateFin = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().split('T')[0];
+      
+      const storeInfosResponse = await api.post<MyResponse<MagasinInfo[]>>(endpoints.getMagasinsInfos, {
+        dateDebut,
+        dateFin
+      });
+      
+      if (storesResponse.data.success) {
+        setStores(storesResponse.data.data);
+      }
+      
+      if (storeInfosResponse.data.success) {
+        setStoreInfos(storeInfosResponse.data.data);
+      }
       
     } catch (error: any) {
+      console.error('Stores API Error:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de charger les données des magasins',
+        description: error.response?.data?.message || 'Impossible de charger les données des magasins',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   };
 

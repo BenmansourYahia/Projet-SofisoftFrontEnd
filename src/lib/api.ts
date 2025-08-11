@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configure base API URL - update this to your backend URL
-const API_BASE_URL = 'http://localhost:8080'; // Change this to your actual backend URL
+const API_BASE_URL = 'http://localhost:8080'; // Backend Spring Boot server
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -39,7 +39,7 @@ export const endpoints = {
   // Authentication
   login: '/Login',
   
-  // Dashboard
+  // Dashboard - Note: These are GET endpoints in backend
   dashboardMagasins: '/dashboardMagasins',
   evolutionCA: '/evolutionCA',
   
@@ -66,3 +66,6 @@ export const endpoints = {
   getParam: '/getParam',
   getDims: '/getDims',
 };
+
+// Note: Dashboard endpoints (dashboardMagasins, evolutionCA) use GET method in backend
+// and are correctly called with GET in frontend (api.get)

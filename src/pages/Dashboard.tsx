@@ -31,36 +31,35 @@ export const Dashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      setLoading(true);
       
-      // Demo data
-      const demoStoreData: DashboardModel[] = [
-        { magasinCode: 'MAG001', magasinNom: 'Magasin Centre-Ville', ca: 125000, tickets: 3456, quantite: 12890, prixMoyen: 36.15, panierMoyen: 52.30, periode: '2024-01' },
-        { magasinCode: 'MAG002', magasinNom: 'Magasin Banlieue', ca: 98500, tickets: 2987, quantite: 9876, prixMoyen: 32.98, panierMoyen: 48.75, periode: '2024-01' },
-        { magasinCode: 'MAG003', magasinNom: 'Magasin Sud', ca: 156800, tickets: 4123, quantite: 15467, prixMoyen: 38.42, panierMoyen: 55.20, periode: '2024-01' }
-      ];
+      // Fetch dashboard data for all stores or selected store
+      const dashboardResponse = await api.get<MyResponse<DashboardModel[]>>(
+        `${endpoints.dashboardMagasins}${selectedStore !== 'ALL' ? `?magasinCode=${selectedStore}` : ''}`
+      );
       
-      const demoEvolutionData: EvolutionCAModel[] = [
-        { date: '2024-01-20', montant: 4500 },
-        { date: '2024-01-21', montant: 5200 },
-        { date: '2024-01-22', montant: 4800 },
-        { date: '2024-01-23', montant: 6100 },
-        { date: '2024-01-24', montant: 5800 },
-        { date: '2024-01-25', montant: 7200 },
-        { date: '2024-01-26', montant: 6800 },
-        { date: '2024-01-27', montant: 5900 }
-      ];
+      // Fetch evolution data
+      const evolutionResponse = await api.get<MyResponse<EvolutionCAModel[]>>(
+        `${endpoints.evolutionCA}${selectedStore !== 'ALL' ? `?magasinCode=${selectedStore}` : ''}`
+      );
       
-      setDashboardData(demoStoreData);
-      setEvolutionData(demoEvolutionData);
+      if (dashboardResponse.data.success) {
+        setDashboardData(dashboardResponse.data.data);
+      }
+      
+      if (evolutionResponse.data.success) {
+        setEvolutionData(evolutionResponse.data.data);
+      }
       
     } catch (error: any) {
+      console.error('Dashboard API Error:', error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de charger les données du dashboard',
+        description: error.response?.data?.message || 'Impossible de charger les données du dashboard',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
