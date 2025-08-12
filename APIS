@@ -1,0 +1,273 @@
+{
+  "apis": [
+    {
+      "name": "Welcome",
+      "path": "/",
+      "method": "GET",
+      "description": "Returns a welcome message.",
+      "request": {},
+      "response": {
+        "type": "string",
+        "example": "welcome to cam web Service ^_^ "
+      }
+    },
+    {
+      "name": "Best Sales Products",
+      "path": "/bestSalesPrds",
+      "method": "POST",
+      "description": "Returns the best selling products for a given store and period.",
+      "request": {
+        "numMagasin": "integer",
+        "debut": "string (format: dd-MM-yyyy HH:mm:ss)",
+        "fin": "string (format: dd-MM-yyyy HH:mm:ss)"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (list of BestSalePrdModel)",
+        "message": "string",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Get Line Ventes",
+      "path": "/getLineVentes",
+      "method": "POST",
+      "description": "Returns sales lines for a given movement and store.",
+      "request": {
+        "numMvt": "integer",
+        "numMagasin": "integer"
+      },
+      "response": {
+        "type": "json",
+        "example": "[{...LineVenteDirect...}]"
+      }
+    },
+    {
+      "name": "Get Produits Vendus",
+      "path": "/getPrdsVendus",
+      "method": "POST",
+      "description": "Returns sold products for a given period and store.",
+      "request": {
+        "numMagasin": "integer",
+        "debut": "string (format: dd-MM-yyyy HH:mm:ss)",
+        "fin": "string (format: dd-MM-yyyy HH:mm:ss)"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (list of VuePrdsVendusParDate)",
+        "message": "string",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Get Dimensions Produits Vendus",
+      "path": "/getDimsPrdVendus",
+      "method": "POST",
+      "description": "Returns sold product dimensions for a given period, store, and product.",
+      "request": {
+        "numMagasin": "integer",
+        "numProduit": "integer",
+        "debut": "string (format: dd-MM-yyyy HH:mm:ss)",
+        "fin": "string (format: dd-MM-yyyy HH:mm:ss)"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (list of VuePrdsVendusParDate)",
+        "message": "string",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Get Paramètres",
+      "path": "/getParam",
+      "method": "POST",
+      "description": "Returns application parameters for module ANDROID_UPDATE_APP.",
+      "request": {},
+      "response": {
+        "dataObject": "Parametres"
+      }
+    },
+    {
+      "name": "Get Magasins",
+      "path": "/getMagasins",
+      "method": "POST",
+      "description": "Returns the list of stores.",
+      "request": {},
+      "response": {
+        "success": "boolean",
+        "data": "json (list of DspMagasin)",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Get Infos Magasins par Date",
+      "path": "/getMagasinsInfoByDate",
+      "method": "POST",
+      "description": "Returns store KPIs for a period or globally.",
+      "request": {
+        "withDate": "boolean",
+        "debut": "string (format: dd-MM-yyyy HH:mm:ss, required if withDate=true)",
+        "fin": "string (format: dd-MM-yyyy HH:mm:ss, required if withDate=true)"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (list of VueCaMagJourObj)",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Get Compare Période",
+      "path": "/getComparePeriode",
+      "method": "POST",
+      "description": "Compares two periods for a given store.",
+      "request": {
+        "dateDebut_1": "string (format: dd-MM-yyyy HH:mm:ss)",
+        "dateFin_1": "string (format: dd-MM-yyyy HH:mm:ss)",
+        "dateDebut_2": "string (format: dd-MM-yyyy HH:mm:ss)",
+        "dateFin_2": "string (format: dd-MM-yyyy HH:mm:ss)",
+        "codeMagasin": "string"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (list of VueCaMagJourObj)",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Get Infos par Date",
+      "path": "/getInfosByDate",
+      "method": "POST",
+      "description": "Returns sales by day for a period and comparison with previous year.",
+      "request": {
+        "debut": "string (format: dd-MM-yyyy HH:mm:ss)",
+        "fin": "string (format: dd-MM-yyyy HH:mm:ss)"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (object with 'data', 'objCompare')",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Get Infos Day",
+      "path": "/getInfosDay",
+      "method": "POST",
+      "description": "Returns sales by hour for a day and comparison with previous year.",
+      "request": {
+        "debut": "string (format: dd-MM-yyyy HH:mm:ss)",
+        "fin": "string (format: dd-MM-yyyy HH:mm:ss)"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (object with 'data', 'objCompare', 'vueInfos')",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Get Dimensions Produit",
+      "path": "/getDims",
+      "method": "POST",
+      "description": "Returns dimensions for a product by barcode.",
+      "request": {
+        "barCode": "string"
+      },
+      "response": {
+        "type": "StkPrdDim"
+      }
+    },
+    {
+      "name": "Stock By Product",
+      "path": "/StockByProduct",
+      "method": "POST",
+      "description": "Returns stock for a product (by code or barcode), with or without dimensions.",
+      "request": {
+        "isByBarcode": "boolean",
+        "barecode": "string (if isByBarcode=true)",
+        "codeProduit": "string (if isByBarcode=false)"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (stock info)",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Global Stock",
+      "path": "/GlobalStock",
+      "method": "POST",
+      "description": "Returns global stock for all products, with filters (stock = 0, >0, <0, etc.).",
+      "request": {
+        "from": "integer",
+        "to": "integer",
+        "stockBy": "integer",
+        "chaine": "string (optional, for formula filter)"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (list of StockModel)",
+        "exception": "object/null"
+      }
+    },
+    {
+      "name": "Dashboard Magasins",
+      "path": "/dashboardMagasins",
+      "method": "GET",
+      "description": "Returns KPIs for all stores or a specific store.",
+      "request": {
+        "codeMagasin": "string (optional, as query param)"
+      },
+      "response": {
+        "type": "json",
+        "example": "[{...DashboardModel...}]"
+      }
+    },
+    {
+      "name": "Evolution CA",
+      "path": "/evolutionCA",
+      "method": "GET",
+      "description": "Returns CA evolution by day for a period, for a store or all stores.",
+      "request": {
+        "dateDebut": "string (format: yyyy-MM-dd)",
+        "dateFin": "string (format: yyyy-MM-dd)",
+        "codeMagasin": "string (optional)"
+      },
+      "response": {
+        "type": "json",
+        "example": "[{date: '2022-06-24', montantTTC: 12345.67}]"
+      }
+    },
+    {
+      "name": "Compare Magasins",
+      "path": "/compareMagasins",
+      "method": "POST",
+      "description": "Compares multiple stores: KPIs, gaps, ranking, etc.",
+      "request": [
+        "string (codeMagasin1)",
+        "string (codeMagasin2)",
+        "..."
+      ],
+      "response": {
+        "magasins": "[DashboardModel]",
+        "ecartCA": "number",
+        "ecartTickets": "number",
+        "ecartQuantite": "number",
+        "classement": "[DashboardModel]"
+      }
+    },
+    {
+      "name": "Login",
+      "path": "/Login",
+      "method": "POST",
+      "description": "Authenticates a user and returns user info, associated stores, and parameters.",
+      "request": {
+        "nom": "string",
+        "motPasse": "string"
+      },
+      "response": {
+        "success": "boolean",
+        "data": "json (user info, stores, params)",
+        "exception": "object/null"
+      }
+    }
+  ]
+}
