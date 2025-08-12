@@ -219,3 +219,5 @@ export const ProductDimensions: React.FC = () => {
     </DashboardLayout>
   );
 };
+
+export default ProductDimensions;

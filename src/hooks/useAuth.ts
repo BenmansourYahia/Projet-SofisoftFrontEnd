@@ -3,7 +3,7 @@ import { User } from '@/types/api';
 
 interface AuthContextType {
   user: User | null;
-  login: (user: User, token: string) => void;
+  login: (user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
@@ -39,9 +39,8 @@ export const useAuthState = () => {
     setLoading(false);
   }, []);
 
-  const login = (userData: User, token: string) => {
+  const login = (userData: User) => {
     localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('authToken', token);
     setUser(userData);
   };
 

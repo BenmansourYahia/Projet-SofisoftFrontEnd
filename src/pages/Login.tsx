@@ -25,28 +25,58 @@ export const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      // Real API call to backend
-      const response = await api.post<MyResponse<User>>(endpoints.login, {
-        username: credentials.username,
-        password: credentials.password
-      });
-
+      // Simple API call to backend (no token logic)
+      const payload = {
+        nom: credentials.username,
+        motPasse: credentials.password
+      };
+  // ...existing code...
+      const response = await api.post(endpoints.login, payload);
+  // ...existing code...
       if (response.data.success) {
-        const user = response.data.data;
-        const token = response.headers.authorization?.replace('Bearer ', '') || 'token-' + Date.now();
-        
-        login(user, token);
-        
+        // Parse stringified JSON from backend
+        let parsedData;
+        try {
+          parsedData = JSON.parse(response.data.data);
+        } catch (e) {
+          toast({
+            title: 'Erreur de parsing',
+            description: 'Impossible de lire la réponse du serveur.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+        if (!parsedData.user) {
+          toast({
+            title: 'Réponse inattendue',
+            description: 'Utilisateur non trouvé dans la réponse du serveur.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+        // Map magasins to expected frontend type
+        const user = {
+          ...parsedData.user,
+          magasins: Array.isArray(parsedData.mags)
+            ? parsedData.mags.map((m) => ({
+                code: m.codeMagasin,
+                nom: m.nomMagasin,
+                ...m
+              }))
+            : []
+        };
+        login(user); // No token
         toast({
           title: 'Connexion réussie',
-          description: `Bienvenue ${user.prenom} ${user.nom}`,
+          description: `Bienvenue ${user.nom}`,
         });
-        
         navigate('/dashboard');
       } else {
         toast({
           title: 'Échec de connexion',
-          description: response.data.message || 'Identifiants incorrects',
+          description: response.data.message || response.data.data || 'Identifiants incorrects',
           variant: 'destructive',
         });
       }
@@ -150,14 +180,7 @@ export const Login: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Demo Credentials */}
-        <Card className="bg-muted/50">
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground text-center">
-              <strong>Démo:</strong> Utilisez n'importe quel nom d'utilisateur et mot de passe pour tester
-            </p>
-          </CardContent>
-        </Card>
+        
       </div>
     </div>
   );

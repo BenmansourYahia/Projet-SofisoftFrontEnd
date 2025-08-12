@@ -423,3 +423,5 @@ export const Sales: React.FC = () => {
     </DashboardLayout>
   );
 };
+
+export default Sales;

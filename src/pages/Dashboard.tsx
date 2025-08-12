@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { CalendarDateRangePicker } from '@/components/ui/calendar-date-range-picker';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { MetricCard } from '@/components/ui/metric-card';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,27 +29,79 @@ export const Dashboard: React.FC = () => {
   const [selectedStore, setSelectedStore] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
+    from: new Date('2022-06-24'),
+    to: new Date('2024-06-26'),
+  });
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       
-      // Fetch dashboard data for all stores or selected store
-      const dashboardResponse = await api.get<MyResponse<DashboardModel[]>>(
-        `${endpoints.dashboardMagasins}${selectedStore !== 'ALL' ? `?magasinCode=${selectedStore}` : ''}`
-      );
-      
-      // Fetch evolution data
-      const evolutionResponse = await api.get<MyResponse<EvolutionCAModel[]>>(
-        `${endpoints.evolutionCA}${selectedStore !== 'ALL' ? `?magasinCode=${selectedStore}` : ''}`
-      );
-      
-      if (dashboardResponse.data.success) {
-        setDashboardData(dashboardResponse.data.data);
+      // Use date range from state
+      const dateDebut = dateRange.from.toISOString().slice(0, 10);
+      const dateFin = dateRange.to.toISOString().slice(0, 10);
+
+      // Build dashboardMagasins URL: only add codeMagasin if a store is selected
+      let dashboardUrl = `${endpoints.dashboardMagasins}?dateDebut=${dateDebut}&dateFin=${dateFin}`;
+      if (selectedStore !== 'ALL') {
+        dashboardUrl += `&codeMagasin=${selectedStore}`;
       }
-      
-      if (evolutionResponse.data.success) {
-        setEvolutionData(evolutionResponse.data.data);
+
+      // Build evolutionCA URL: always add dateDebut/dateFin, and codeMagasin if a store is selected
+      let evolutionUrl = `${endpoints.evolutionCA}?dateDebut=${dateDebut}&dateFin=${dateFin}`;
+      if (selectedStore !== 'ALL') {
+        evolutionUrl += `&codeMagasin=${selectedStore}`;
+      }
+
+      const dashboardResponse = await api.get(dashboardUrl);
+      const evolutionResponse = await api.get(evolutionUrl);
+
+      // Map backend dashboard data to frontend model
+      if (dashboardResponse.data && Array.isArray(dashboardResponse.data)) {
+        setDashboardData(
+          dashboardResponse.data.map((item: any) => ({
+            magasinCode: item.codeMagasin,
+            magasinNom: item.nomMagasin,
+            ca: item.montantTTC,
+            tickets: item.nombreTickets,
+            quantite: item.quantite,
+            prixMoyen: item.prixMoyen,
+            panierMoyen: item.panierMoyen,
+            periode: item.periode || '',
+          }))
+        );
+      } else if (dashboardResponse.data && dashboardResponse.data.success && Array.isArray(dashboardResponse.data.data)) {
+        setDashboardData(
+          dashboardResponse.data.data.map((item: any) => ({
+            magasinCode: item.codeMagasin,
+            magasinNom: item.nomMagasin,
+            ca: item.montantTTC,
+            tickets: item.nombreTickets,
+            quantite: item.quantite,
+            prixMoyen: item.prixMoyen,
+            panierMoyen: item.panierMoyen,
+            periode: item.periode || '',
+          }))
+        );
+      } else {
+        setDashboardData([]);
+      }
+
+      // Map backend evolution data to frontend model
+      const mapEvolution = (arr: any[]) =>
+        arr.map((item: any) => ({
+          date: item.jourVente ? new Date(item.jourVente).toISOString() : '',
+          montant: item.montantTTC,
+          magasinCode: item.codeMagasin || (selectedStore !== 'ALL' ? selectedStore : undefined),
+        }));
+
+      if (evolutionResponse.data && Array.isArray(evolutionResponse.data)) {
+        setEvolutionData(mapEvolution(evolutionResponse.data));
+      } else if (evolutionResponse.data && evolutionResponse.data.success && Array.isArray(evolutionResponse.data.data)) {
+        setEvolutionData(mapEvolution(evolutionResponse.data.data));
+      } else {
+        setEvolutionData([]);
       }
       
     } catch (error: any) {
@@ -79,20 +132,22 @@ export const Dashboard: React.FC = () => {
       await fetchDashboardData();
       setLoading(false);
     };
-
     loadData();
-  }, []);
+  }, [selectedStore, dateRange]);
 
   // Calculate aggregated metrics
-  const filteredData = selectedStore === 'ALL' 
-    ? dashboardData 
-    : dashboardData.filter(item => item.magasinCode === selectedStore);
+  let filteredData: DashboardModel[] = [];
+  if (selectedStore === 'ALL') {
+    filteredData = dashboardData;
+  } else {
+    filteredData = dashboardData.filter(item => item.magasinCode === selectedStore);
+  }
 
-  const totalCA = filteredData.reduce((sum, item) => sum + item.ca, 0);
-  const totalTickets = filteredData.reduce((sum, item) => sum + item.tickets, 0);
-  const totalQuantite = filteredData.reduce((sum, item) => sum + item.quantite, 0);
+  const totalCA = filteredData.reduce((sum, item) => sum + (item.ca || 0), 0);
+  const totalTickets = filteredData.reduce((sum, item) => sum + (item.tickets || 0), 0);
+  const totalQuantite = filteredData.reduce((sum, item) => sum + (item.quantite || 0), 0);
   const avgPrixMoyen = filteredData.length > 0 
-    ? filteredData.reduce((sum, item) => sum + item.prixMoyen, 0) / filteredData.length 
+    ? filteredData.reduce((sum, item) => sum + (item.prixMoyen || 0), 0) / filteredData.length 
     : 0;
 
   // Format chart data
@@ -105,6 +160,11 @@ export const Dashboard: React.FC = () => {
       }),
       montant: item.montant
     }));
+
+  // For performance list: show all magasins if ALL, else only selected magasin
+  const performanceList = selectedStore === 'ALL'
+    ? dashboardData.slice().sort((a, b) => b.ca - a.ca).slice(0, 5)
+    : dashboardData.filter(item => item.magasinCode === selectedStore);
 
   if (loading) {
     return (
@@ -128,6 +188,13 @@ export const Dashboard: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center space-x-4">
+            <CalendarDateRangePicker
+              date={dateRange}
+              onDateChange={(range) => {
+                if (range.from && range.to) setDateRange(range);
+              }}
+              className="w-64"
+            />
             <Select value={selectedStore} onValueChange={setSelectedStore}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Sélectionner un magasin" />
@@ -249,37 +316,34 @@ export const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {dashboardData
-                  .sort((a, b) => b.ca - a.ca)
-                  .slice(0, 5)
-                  .map((store, index) => (
-                    <div key={store.magasinCode} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                          index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
-                          index === 1 ? 'bg-gray-500/20 text-gray-400' :
-                          index === 2 ? 'bg-orange-500/20 text-orange-500' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          {index + 1}
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{store.magasinNom}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {store.tickets} tickets
-                          </p>
-                        </div>
+                {performanceList.map((store, index) => (
+                  <div key={store.magasinCode} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
+                        index === 1 ? 'bg-gray-500/20 text-gray-400' :
+                        index === 2 ? 'bg-orange-500/20 text-orange-500' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {index + 1}
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-foreground">
-                          {store.ca.toLocaleString()}€
-                        </p>
+                      <div>
+                        <p className="font-medium text-foreground">{store.magasinNom}</p>
                         <p className="text-sm text-muted-foreground">
-                          {store.panierMoyen.toFixed(2)}€/panier
+                          {store.tickets} tickets
                         </p>
                       </div>
                     </div>
-                  ))}
+                    <div className="text-right">
+                      <p className="font-bold text-foreground">
+                        {store.ca.toLocaleString()}€
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {store.panierMoyen.toFixed(2)}€/panier
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
