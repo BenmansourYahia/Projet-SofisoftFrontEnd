@@ -1,109 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { MetricCard } from '@/components/ui/metric-card';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Store, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  DollarSign, 
-  ShoppingCart,
-  Package,
-  TrendingUp,
-  BarChart3,
-  RefreshCw
-} from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { Store, MapPin, Phone, Mail, RefreshCw } from 'lucide-react';
+import Slider from '@mui/material/Slider';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { fr } from 'date-fns/locale';
 import api, { endpoints } from '@/lib/api';
-import { MyResponse, Magasin, MagasinInfo } from '@/types/api';
+import { MyResponse } from '@/types/api';
+
+function formatBackendDate(date: Date, endOfDay = false) {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${endOfDay ? '23:59:59' : '00:00:00'}`;
+}
 
 export const Stores: React.FC = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  
-  const [stores, setStores] = useState<Magasin[]>([]);
-  const [storeInfos, setStoreInfos] = useState<MagasinInfo[]>([]);
+  const [magasins, setMagasins] = useState<any[]>([]);
+  const [filteredMagasins, setFilteredMagasins] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
+  // For date range slicer (Power BI style)
+  const defaultMinDate = new Date('2022-01-01');
+  const defaultMaxDate = new Date();
+  const [dateRange, setDateRange] = useState<[number, number]>([
+    defaultMinDate.getTime(),
+    defaultMaxDate.getTime(),
+  ]);
+  const [dateMin] = useState(defaultMinDate.getTime());
+  const [dateMax] = useState(defaultMaxDate.getTime());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchStoresData = async () => {
+  const fetchMagasins = async () => {
     try {
       setLoading(true);
-      
-      // Fetch stores list
-      const storesResponse = await api.post<MyResponse<Magasin[]>>(endpoints.getMagasins, {});
-      
-      // Fetch store information for current month
-      const currentDate = new Date();
-      const dateDebut = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0];
-      const dateFin = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().split('T')[0];
-      
-      const storeInfosResponse = await api.post<MyResponse<MagasinInfo[]>>(endpoints.getMagasinsInfos, {
-        dateDebut,
-        dateFin
+      const from = new Date(dateRange[0]);
+      const to = new Date(dateRange[1]);
+      const debut = formatBackendDate(from, false);
+      const fin = formatBackendDate(to, true);
+      const response = await api.post<MyResponse<any>>(endpoints.getMagasinsInfoByDate, {
+        withDate: true,
+        debut,
+        fin
       });
-      
-      if (storesResponse.data.success) {
-        setStores(storesResponse.data.data);
+      let data: any[] = [];
+      if (response.data.success && typeof response.data.data === 'string') {
+        data = JSON.parse(response.data.data);
+      } else if (response.data.success && Array.isArray(response.data.data)) {
+        data = response.data.data;
       }
-      
-      if (storeInfosResponse.data.success) {
-        setStoreInfos(storeInfosResponse.data.data);
-      }
-      
-    } catch (error: any) {
-      console.error('Stores API Error:', error);
-      toast({
-        title: 'Erreur',
-        description: error.response?.data?.message || 'Impossible de charger les données des magasins',
-        variant: 'destructive',
-      });
+      setMagasins(data);
+      setFilteredMagasins(data);
+    } catch (error) {
+      setMagasins([]);
+      setFilteredMagasins([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const refreshData = async () => {
-    setRefreshing(true);
-    await fetchStoresData();
-    setRefreshing(false);
-    toast({
-      title: 'Données actualisées',
-      description: 'Les informations des magasins ont été mises à jour',
-    });
-  };
+  useEffect(() => {
+    fetchMagasins();
+    // eslint-disable-next-line
+  }, [dateRange]);
+
+  // Optionally, update dateMin/dateMax if you want to allow dynamic range
+  // useEffect(() => {
+  //   // Example: set min/max based on magasins data if needed
+  // }, [magasins]);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await fetchStoresData();
-      setLoading(false);
-    };
+    let filtered = magasins;
+    if (search) {
+      filtered = filtered.filter(m =>
+        m.nomMagasin?.toLowerCase().includes(search.toLowerCase()) ||
+        m.codeMagasin?.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    setFilteredMagasins(filtered);
+  }, [magasins, search]);
 
-    loadData();
-  }, []);
-
-  // Calculate total metrics
-  const totalCA = storeInfos.reduce((sum, store) => sum + store.ca, 0);
-  const totalTickets = storeInfos.reduce((sum, store) => sum + store.tickets, 0);
-  const totalQuantite = storeInfos.reduce((sum, store) => sum + store.quantite, 0);
-  const avgPanierMoyen = storeInfos.length > 0 
-    ? storeInfos.reduce((sum, store) => sum + store.panierMoyen, 0) / storeInfos.length 
-    : 0;
-
-  const getStoreInfo = (storeCode: string) => {
-    return storeInfos.find(info => info.code === storeCode);
-  };
-
-  const getStoreStatus = (storeInfo?: MagasinInfo) => {
-    if (!storeInfo) return { status: 'Inactif', variant: 'secondary' as const };
-    if (storeInfo.ca > 10000) return { status: 'Excellent', variant: 'default' as const };
-    if (storeInfo.ca > 5000) return { status: 'Bon', variant: 'secondary' as const };
-    return { status: 'Moyen', variant: 'outline' as const };
+  const refreshData = async () => {
+    setRefreshing(true);
+    await fetchMagasins();
+    setRefreshing(false);
   };
 
   if (loading) {
@@ -119,216 +100,99 @@ export const Stores: React.FC = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Magasins</h1>
-            <p className="text-muted-foreground">
-              Gestion et suivi des performances de vos points de vente
-            </p>
+            <p className="text-muted-foreground">Liste et informations des magasins</p>
           </div>
-          <Button 
-            onClick={refreshData} 
-            disabled={refreshing}
-            variant="outline"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Actualiser
-          </Button>
-        </div>
-
-        {/* Global Metrics */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <MetricCard
-            title="CA Total Réseau"
-            value={`${totalCA.toLocaleString()} €`}
-            change={12.5}
-            changeLabel="vs période précédente"
-            icon={DollarSign}
-            variant="success"
-          />
-          <MetricCard
-            title="Tickets Total"
-            value={totalTickets.toLocaleString()}
-            change={8.3}
-            changeLabel="vs période précédente"
-            icon={ShoppingCart}
-            variant="default"
-          />
-          <MetricCard
-            title="Quantités Vendues"
-            value={totalQuantite.toLocaleString()}
-            change={-1.2}
-            changeLabel="vs période précédente"
-            icon={Package}
-            variant="warning"
-          />
-          <MetricCard
-            title="Panier Moyen Réseau"
-            value={`${avgPanierMoyen.toFixed(2)} €`}
-            change={4.7}
-            changeLabel="vs période précédente"
-            icon={TrendingUp}
-            variant="success"
-          />
-        </div>
-
-        {/* Stores Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {stores.map((store) => {
-            const storeInfo = getStoreInfo(store.code);
-            const { status, variant } = getStoreStatus(storeInfo);
-
-            return (
-              <Card key={store.code} className="shadow-elegant hover:shadow-glow transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-12 w-12 bg-primary/20 rounded-lg flex items-center justify-center">
-                        <Store className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{store.nom}</CardTitle>
-                        <CardDescription>{store.code}</CardDescription>
-                      </div>
-                    </div>
-                    <Badge variant={variant}>{status}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Contact Info */}
-                  <div className="space-y-2">
-                    {store.adresse && (
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>{store.adresse}</span>
-                      </div>
-                    )}
-                    {store.telephone && (
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <Phone className="h-4 w-4" />
-                        <span>{store.telephone}</span>
-                      </div>
-                    )}
-                    {store.email && (
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <Mail className="h-4 w-4" />
-                        <span>{store.email}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Performance Metrics */}
-                  {storeInfo && (
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-foreground">
-                          {storeInfo.ca.toLocaleString()}€
-                        </p>
-                        <p className="text-xs text-muted-foreground">Chiffre d'Affaires</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-foreground">
-                          {storeInfo.tickets.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Tickets</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-lg font-semibold text-foreground">
-                          {storeInfo.panierMoyen.toFixed(2)}€
-                        </p>
-                        <p className="text-xs text-muted-foreground">Panier Moyen</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-lg font-semibold text-foreground">
-                          {storeInfo.quantite.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Quantités</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex space-x-2 pt-4">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <BarChart3 className="h-4 w-4 mr-2" />
-                      Analyser
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Package className="h-4 w-4 mr-2" />
-                      Stock
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Performance Ranking */}
-        <Card className="shadow-elegant">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <TrendingUp className="h-5 w-5" />
-              <span>Classement des Performances</span>
-            </CardTitle>
-            <CardDescription>
-              Classement des magasins par chiffre d'affaires (30 derniers jours)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {storeInfos
-                .sort((a, b) => b.ca - a.ca)
-                .map((storeInfo, index) => {
-                  const store = stores.find(s => s.code === storeInfo.code);
-                  const percentage = totalCA > 0 ? (storeInfo.ca / totalCA) * 100 : 0;
-                  
-                  return (
-                    <div key={storeInfo.code} className="flex items-center space-x-4 p-4 rounded-lg bg-muted/30">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                        index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
-                        index === 1 ? 'bg-gray-500/20 text-gray-400' :
-                        index === 2 ? 'bg-orange-500/20 text-orange-500' :
-                        'bg-muted text-muted-foreground'
-                      }`}>
-                        {index + 1}
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-foreground">
-                            {store?.nom || storeInfo.code}
-                          </h4>
-                          <div className="text-right">
-                            <p className="font-bold text-foreground">
-                              {storeInfo.ca.toLocaleString()}€
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {percentage.toFixed(1)}% du total
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <span>{storeInfo.tickets} tickets</span>
-                          <span>Panier: {storeInfo.panierMoyen.toFixed(2)}€</span>
-                          <span>Qty: {storeInfo.quantite}</span>
-                        </div>
-                        
-                        <div className="mt-2 w-full bg-muted rounded-full h-2">
-                          <div 
-                            className="bg-primary h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${Math.min(percentage, 100)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+          <div className="flex items-center space-x-4">
+            <input
+              type="text"
+              placeholder="Rechercher par nom ou code..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="input input-bordered w-64 px-3 py-2 rounded border focus:outline-none"
+            />
+            {/* Power BI-style date range slicer */}
+            <div className="flex flex-col items-center p-2 bg-muted rounded shadow-md min-w-[340px]">
+              <div className="font-semibold mb-1">Période</div>
+              <div className="flex items-center gap-2 mb-2">
+                <input
+                  type="date"
+                  value={new Date(dateRange[0]).toISOString().slice(0, 10)}
+                  min={new Date(dateMin).toISOString().slice(0, 10)}
+                  max={new Date(dateRange[1]).toISOString().slice(0, 10)}
+                  onChange={e => setDateRange([new Date(e.target.value).getTime(), dateRange[1]])}
+                  className="w-36 px-2 py-1 rounded border"
+                  style={{ color: '#111', fontWeight: 700, background: 'white' }}
+                />
+                <span>→</span>
+                <input
+                  type="date"
+                  value={new Date(dateRange[1]).toISOString().slice(0, 10)}
+                  min={new Date(dateRange[0]).toISOString().slice(0, 10)}
+                  max={new Date(dateMax).toISOString().slice(0, 10)}
+                  onChange={e => setDateRange([dateRange[0], new Date(e.target.value).getTime()])}
+                  className="w-36 px-2 py-1 rounded border"
+                  style={{ color: '#111', fontWeight: 700, background: 'white' }}
+                />
+              </div>
+              <Slider
+                value={dateRange}
+                min={dateMin}
+                max={dateMax}
+                step={24*60*60*1000}
+                onChange={(_, newValue) => setDateRange(newValue as [number, number])}
+                valueLabelDisplay="off"
+                disableSwap
+                sx={{ width: 240 }}
+              />
+              {/* Removed min/max labels for a cleaner look */}
             </div>
-          </CardContent>
-        </Card>
+            <Button onClick={refreshData} disabled={refreshing} variant="outline">
+              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Actualiser
+            </Button>
+          </div>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredMagasins.map((store) => (
+            <Card key={store.codeMagasin} className="shadow-2xl bg-gradient-to-br from-black via-gray-900 to-gray-800 border border-gray-700 rounded-2xl">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Store className="h-6 w-6 text-primary drop-shadow-lg" />
+                    <span className="text-lg font-bold text-white tracking-tight drop-shadow">{store.nomMagasin}</span>
+                  </div>
+                  <span className="text-xs text-gray-300 font-mono drop-shadow">{store.codeMagasin}</span>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md">
+                    <span className="text-xs text-gray-400">CA</span>
+                    <span className="font-bold text-lg text-white drop-shadow">{store.montantTTC?.toLocaleString() || 0}€</span>
+                  </div>
+                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md">
+                    <span className="text-xs text-gray-400">Tickets</span>
+                    <span className="font-bold text-lg text-white drop-shadow">{store.nombreTickets?.toLocaleString() || 0}</span>
+                  </div>
+                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md">
+                    <span className="text-xs text-gray-400">Quantité</span>
+                    <span className="font-bold text-lg text-white drop-shadow">{store.quantite?.toLocaleString() || 0}</span>
+                  </div>
+                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md">
+                    <span className="text-xs text-gray-400">Panier Moyen</span>
+                    <span className="font-bold text-lg text-white drop-shadow">{store.panierMoyen?.toFixed(2) || 0}€</span>
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-center">
+                  <span className="text-xs text-gray-200 bg-gray-800 rounded px-3 py-1 shadow">Gérant: {store.gerant || 'N/A'}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </DashboardLayout>
   );
