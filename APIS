@@ -116,6 +116,21 @@
       }
     },
     {
+      "name": "Get Infos Magasins (list)",
+      "path": "/getMagasinsInfos",
+      "method": "POST",
+      "description": "Returns store KPIs for a period or globally (list format).",
+      "request": {
+        "withDate": "boolean",
+        "debut": "string (format: dd-MM-yyyy HH:mm:ss, required if withDate=true)",
+        "fin": "string (format: dd-MM-yyyy HH:mm:ss, required if withDate=true)"
+      },
+      "response": {
+        "type": "json",
+        "example": "[{...VueCaMagJourObj...}]"
+      }
+    },
+    {
       "name": "Get Compare Période",
       "path": "/getComparePeriode",
       "method": "POST",
