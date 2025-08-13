@@ -51,6 +51,7 @@ const Sales: React.FC = () => {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [sortTotal, setSortTotal] = useState<'asc' | 'desc' | ''>('');
 
   function formatDate(dateStr: string, isStart: boolean) {
     // Convert YYYY-MM-DD to DD-MM-YYYY
@@ -104,6 +105,25 @@ const Sales: React.FC = () => {
       <div className="space-y-6 animate-fade-in bg-black min-h-screen py-8 px-4">
         <h1 className="text-3xl font-bold mb-6 text-white">Ventes</h1>
         <div className="mb-6 flex flex-wrap gap-4 items-center bg-zinc-900 p-4 rounded shadow">
+          <div className="flex gap-2 items-center">
+            <label className="text-white font-semibold">Total:</label>
+            <select
+              className="border border-zinc-700 rounded px-2 py-1 text-white bg-black"
+              value={sortTotal}
+              onChange={e => setSortTotal(e.target.value as 'asc' | 'desc' | '')}
+            >
+              <option value="">-- Aucun --</option>
+              <option value="asc">Croissant</option>
+              <option value="desc">Décroissant</option>
+            </select>
+            <button
+              className="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1 rounded shadow font-semibold transition ml-2"
+              onClick={() => setSortTotal('')}
+              disabled={sortTotal === ''}
+            >
+              Réinitialiser 
+            </button>
+          </div>
           <select
             className="border border-zinc-700 rounded px-3 py-2 text-white bg-black focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={numMagasin ?? ''}
@@ -124,7 +144,7 @@ const Sales: React.FC = () => {
             disabled={magasins.length === 0}
             style={{ minWidth: '100px' }}
           >
-            Réinitialiser Magasin
+            Réinitialiser 
           </button>
           <input
             type="date"
@@ -151,8 +171,13 @@ const Sales: React.FC = () => {
           {sales.length === 0 && !loading ? (
             <div className="col-span-full text-center text-zinc-400">Aucune vente trouvée</div>
           ) : (
-            sales.map((row, idx) => {
-              return (
+            [...sales]
+              .sort((a, b) => {
+                if (sortTotal === 'asc') return a.total - b.total;
+                if (sortTotal === 'desc') return b.total - a.total;
+                return 0;
+              })
+              .map((row, idx) => (
                 <div key={idx} className="bg-zinc-900 rounded-lg shadow-md p-6 flex flex-col gap-2 border border-zinc-800 hover:shadow-lg transition">
                   <div className="font-bold text-lg mb-1 text-blue-400">{row.designation}</div>
                   <div className="text-sm text-zinc-300">Code Produit: <span className="font-semibold text-white">{row.codeProduitGen}</span></div>
@@ -162,8 +187,7 @@ const Sales: React.FC = () => {
                   <div className="text-sm">Total: <span className="font-semibold text-blue-200">{row.total} DH</span></div>
                   <div className="text-xs text-zinc-500">Numéro Produit: {row.numProduit}</div>
                 </div>
-              );
-            })
+              ))
           )}
         </div>
       </div>
