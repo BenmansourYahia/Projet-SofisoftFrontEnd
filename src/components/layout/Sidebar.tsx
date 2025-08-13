@@ -19,7 +19,6 @@ const navigation = [
   { name: 'Magasins', href: '/stores', icon: Store },
   { name: 'Stock', href: '/stock', icon: Package },
   { name: 'Ventes', href: '/sales', icon: TrendingUp },
-  { name: 'Dimensions', href: '/product-dimensions', icon: Info },
   { name: 'Comparateur', href: '/comparateur', icon: BarChart3 },
   { name: 'Profil', href: '/profile', icon: User },
 ];
