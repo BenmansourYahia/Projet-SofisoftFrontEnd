@@ -116,6 +116,16 @@ const Sales: React.FC = () => {
               </option>
             ))}
           </select>
+          <button
+            className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded shadow font-semibold transition"
+            onClick={() => {
+              if (magasins.length > 0) setNumMagasin(magasins[0].numMagasin);
+            }}
+            disabled={magasins.length === 0}
+            style={{ minWidth: '100px' }}
+          >
+            Réinitialiser Magasin
+          </button>
           <input
             type="date"
             className="border border-zinc-700 rounded px-3 py-2 text-white bg-black focus:outline-none focus:ring-2 focus:ring-blue-400"
