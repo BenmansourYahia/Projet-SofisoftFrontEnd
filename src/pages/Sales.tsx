@@ -178,14 +178,33 @@ const Sales: React.FC = () => {
                 return 0;
               })
               .map((row, idx) => (
-                <div key={idx} className="bg-zinc-900 rounded-lg shadow-md p-6 flex flex-col gap-2 border border-zinc-800 hover:shadow-lg transition">
-                  <div className="font-bold text-lg mb-1 text-blue-400">{row.designation}</div>
-                  <div className="text-sm text-zinc-300">Code Produit: <span className="font-semibold text-white">{row.codeProduitGen}</span></div>
-                  <div className="text-sm text-zinc-300">Code Dims: <span className="font-semibold text-white">{row.codeProduitDims}</span></div>
-                  <div className="text-sm">Quantité vendue: <span className="font-semibold text-green-400">{row.quantite}</span></div>
-                  <div className="text-sm">Prix Vente: <span className="font-semibold text-blue-400">{row.prixVente} DH</span></div>
-                  <div className="text-sm">Total: <span className="font-semibold text-blue-200">{row.total} DH</span></div>
-                  <div className="text-xs text-zinc-500">Numéro Produit: {row.numProduit}</div>
+                <div
+                  key={idx}
+                  className="bg-gradient-to-br from-black via-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-6 flex flex-col gap-3 shadow-2xl hover:shadow-blue-900 transition duration-300 relative"
+                  style={{
+                    boxShadow:
+                      '0 6px 32px 0 rgba(0,0,0,0.85), 0 2px 12px 0 rgba(30,64,175,0.18)',
+                    border: '2px solid #23272f',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div className="absolute top-0 right-0 h-16 w-16 bg-blue-900 opacity-20 rounded-bl-2xl blur-xl pointer-events-none" />
+                  <div className="font-bold text-xl mb-1 text-blue-400 drop-shadow-lg tracking-wide">{row.designation}</div>
+                  <div className="text-sm text-gray-300">Code Produit: <span className="font-semibold text-white drop-shadow">{row.codeProduitGen}</span></div>
+                  <div className="text-sm text-gray-300">Code Dims: <span className="font-semibold text-white drop-shadow">{row.codeProduitDims}</span></div>
+                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md mt-2">
+                    <span className="text-xs text-gray-400">Quantité vendue</span>
+                    <span className="font-bold text-lg text-white drop-shadow">{row.quantite}</span>
+                  </div>
+                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md mt-2">
+                    <span className="text-xs text-gray-400">Prix Vente</span>
+                    <span className="font-bold text-lg text-blue-400 drop-shadow">{row.prixVente} DH</span>
+                  </div>
+                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md mt-2">
+                    <span className="text-xs text-gray-400">Total</span>
+                    <span className="font-bold text-lg text-blue-200 drop-shadow">{row.total} DH</span>
+                  </div>
+                  <div className="text-xs text-gray-200 bg-gray-800 rounded px-3 py-1 shadow mt-3">Numéro Produit: {row.numProduit}</div>
                 </div>
               ))
           )}
