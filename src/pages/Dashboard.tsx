@@ -29,9 +29,13 @@ export const Dashboard: React.FC = () => {
   const [selectedStore, setSelectedStore] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  // Default date range: last 30 days counting today
+  const today = new Date();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(today.getDate() - 29);
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: new Date('2022-06-24'),
-    to: new Date('2024-06-26'),
+    from: thirtyDaysAgo,
+    to: today,
   });
 
   const fetchDashboardData = async () => {
