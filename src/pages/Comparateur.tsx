@@ -250,33 +250,64 @@ export const Comparateur: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label>Magasin à analyser</Label>
-                <select 
-                  className="w-full mt-1 p-2 border border-border rounded-md bg-background"
-                  value={selectedStoreForPeriod}
-                  onChange={(e) => setSelectedStoreForPeriod(e.target.value)}
-                >
-                  <option value="">Sélectionner un magasin</option>
-                  {user?.magasins?.map((store) => (
-                    <option key={store.code} value={store.code}>
-                      {store.nom}
-                    </option>
-                  ))}
-                </select>
+              <div className="space-y-4">
+                <div>
+                  <Label>Magasin à analyser</Label>
+                  <select 
+                    className="w-full mt-1 p-2 border border-border rounded-md bg-background"
+                    value={selectedStoreForPeriod}
+                    onChange={(e) => setSelectedStoreForPeriod(e.target.value)}
+                  >
+                    <option value="">Sélectionner un magasin</option>
+                    {user?.magasins?.map((store) => (
+                      <option key={store.code} value={store.code}>
+                        {store.nom}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Période 1</Label>
+                    <CalendarDateRangePicker
+                      date={period1}
+                      onDateChange={setPeriod1}
+                    />
+                  </div>
+                  <div>
+                    <Label>Période 2</Label>
+                    <CalendarDateRangePicker
+                      date={period2}
+                      onDateChange={setPeriod2}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={comparePeriods} 
+                    disabled={periodLoading || !selectedStoreForPeriod}
+                    className="w-full"
+                  >
+                    {periodLoading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      'Comparer les Périodes'
+                    )}
+                  </Button>
+                  <Button 
+                    variant="secondary"
+                    onClick={() => {
+                      setSelectedStoreForPeriod('');
+                      setPeriod1({ from: addDays(new Date(), -60), to: addDays(new Date(), -31) });
+                      setPeriod2({ from: addDays(new Date(), -30), to: new Date() });
+                      setPeriodComparison(null);
+                    }}
+                    className="w-full"
+                  >
+                    Réinitialiser
+                  </Button>
+                </div>
               </div>
-
-              <Button 
-                onClick={comparePeriods} 
-                disabled={periodLoading || !selectedStoreForPeriod}
-                className="w-full"
-              >
-                {periodLoading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                ) : (
-                  'Comparer les Périodes'
-                )}
-              </Button>
 
               {/* Render period comparison results from parsed array */}
               {Array.isArray(periodComparison) && periodComparison.length === 2 && (
@@ -389,18 +420,18 @@ export const Comparateur: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="p-4 rounded-lg border border-border bg-card/50 flex flex-col items-center">
-                    <span className="text-sm text-muted-foreground">Écart CA</span>
-                    <span className="font-bold text-blue-400 text-lg">{compareData.ecartCA?.toLocaleString()} DH</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="rounded-2xl shadow-elegant bg-card/80 border border-border p-8 flex flex-col items-center gap-3">
+                    <span className="font-semibold text-muted-foreground text-base mb-2">Écart CA</span>
+                    <span className="font-extrabold text-blue-500 text-2xl">{compareData.ecartCA?.toLocaleString()} DH</span>
                   </div>
-                  <div className="p-4 rounded-lg border border-border bg-card/50 flex flex-col items-center">
-                    <span className="text-sm text-muted-foreground">Écart Tickets</span>
-                    <span className="font-bold text-green-400 text-lg">{compareData.ecartTickets?.toLocaleString()}</span>
+                  <div className="rounded-2xl shadow-elegant bg-card/80 border border-border p-8 flex flex-col items-center gap-3">
+                    <span className="font-semibold text-muted-foreground text-base mb-2">Écart Tickets</span>
+                    <span className="font-extrabold text-green-500 text-2xl">{compareData.ecartTickets?.toLocaleString()}</span>
                   </div>
-                  <div className="p-4 rounded-lg border border-border bg-card/50 flex flex-col items-center">
-                    <span className="text-sm text-muted-foreground">Écart Quantité</span>
-                    <span className="font-bold text-purple-400 text-lg">{compareData.ecartQuantite?.toLocaleString()}</span>
+                  <div className="rounded-2xl shadow-elegant bg-card/80 border border-border p-8 flex flex-col items-center gap-3">
+                    <span className="font-semibold text-muted-foreground text-base mb-2">Écart Quantité</span>
+                    <span className="font-extrabold text-purple-500 text-2xl">{compareData.ecartQuantite?.toLocaleString()}</span>
                   </div>
                 </div>
               </CardContent>
