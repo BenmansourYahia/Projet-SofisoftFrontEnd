@@ -61,14 +61,19 @@ export const Comparateur: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await api.post<MyResponse<CompareResponse>>(endpoints.compareMagasins, {
-        magasinCodes: selectedStores,
-        dateDebut: format(dateRange.from, 'yyyy-MM-dd'),
-        dateFin: format(dateRange.to, 'yyyy-MM-dd')
-      });
-
-      if (response.data.success) {
-        setCompareData(response.data.data);
+      // Debug: log the payload sent to backend
+      console.log('compareMagasins payload:', selectedStores);
+      // Backend expects a raw array of codes, not an object
+      const response = await api.post(endpoints.compareMagasins, selectedStores);
+      if (response.data && Array.isArray(response.data.magasins) && response.data.magasins.length > 0) {
+        setCompareData(response.data);
+      } else {
+        setCompareData(null);
+        toast({
+          title: 'Erreur',
+          description: 'Réponse du serveur invalide ou vide',
+          variant: 'destructive',
+        });
       }
     } catch (error: any) {
       toast({
@@ -81,6 +86,15 @@ export const Comparateur: React.FC = () => {
     }
   };
 
+  const [period1, setPeriod1] = useState({
+    from: addDays(new Date(), -60),
+    to: addDays(new Date(), -31)
+  });
+  const [period2, setPeriod2] = useState({
+    from: addDays(new Date(), -30),
+    to: new Date()
+  });
+
   const comparePeriods = async () => {
     if (!selectedStoreForPeriod) {
       toast({
@@ -90,17 +104,21 @@ export const Comparateur: React.FC = () => {
       });
       return;
     }
-
     setPeriodLoading(true);
     try {
-      const response = await api.post<MyResponse<ComparePeriodeResponse>>(endpoints.getComparePeriode, {
-        magasinCode: selectedStoreForPeriod,
-        dateDebut: format(dateRange.from, 'yyyy-MM-dd'),
-        dateFin: format(dateRange.to, 'yyyy-MM-dd')
-      });
-
+      const payload = {
+        codeMagasin: selectedStoreForPeriod,
+        dateDebut_1: `${format(period1.from, 'dd-MM-yyyy')} 00:00:00`,
+        dateFin_1: `${format(period1.to, 'dd-MM-yyyy')} 23:59:59`,
+        dateDebut_2: `${format(period2.from, 'dd-MM-yyyy')} 00:00:00`,
+        dateFin_2: `${format(period2.to, 'dd-MM-yyyy')} 23:59:59`,
+      };
+      const response = await api.post(endpoints.getComparePeriode, payload);
+      console.log('getComparePeriode raw response:', response.data);
       if (response.data.success) {
-        setPeriodComparison(response.data.data);
+        const parsed = JSON.parse(response.data.data);
+        console.log('getComparePeriode parsed data:', parsed);
+        setPeriodComparison(parsed);
       }
     } catch (error: any) {
       toast({
@@ -172,13 +190,7 @@ export const Comparateur: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label>Période d'analyse</Label>
-                <CalendarDateRangePicker
-                  date={dateRange}
-                  onDateChange={setDateRange}
-                />
-              </div>
+              {/* Date picker removed for multi-magasins comparison as backend does not expect dates */}
 
               <div>
                 <Label>Magasins à comparer</Label>
@@ -200,17 +212,29 @@ export const Comparateur: React.FC = () => {
                 </div>
               </div>
 
-              <Button 
-                onClick={compareStores} 
-                disabled={loading || selectedStores.length < 2}
-                className="w-full"
-              >
-                {loading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                ) : (
-                  'Comparer les Magasins'
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={compareStores} 
+                  disabled={loading || selectedStores.length < 2}
+                  className="w-full"
+                >
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  ) : (
+                    'Comparer les Magasins'
+                  )}
+                </Button>
+                <Button 
+                  variant="secondary"
+                  onClick={() => {
+                    setSelectedStores([]);
+                    setCompareData(null);
+                  }}
+                  className="w-full"
+                >
+                  Réinitialiser
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -254,58 +278,51 @@ export const Comparateur: React.FC = () => {
                 )}
               </Button>
 
-              {periodComparison && (
-                <div className="space-y-3 pt-4 border-t border-border">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">CA</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-semibold">
-                        {periodComparison.periodeActuelle.ca.toLocaleString()}€
-                      </span>
-                      <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {periodComparison.periodePrecedente.ca.toLocaleString()}€
-                      </span>
-                      {getTrendIcon(periodComparison.ecart.ca)}
-                      <span className={getTrendColor(periodComparison.ecart.ca)}>
-                        {formatPercentage(periodComparison.ecart.ca)}
-                      </span>
+              {/* Render period comparison results from parsed array */}
+              {Array.isArray(periodComparison) && periodComparison.length === 2 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-border">
+                  {periodComparison.map((period, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-2xl shadow-elegant bg-card/80 border border-border p-8 flex flex-col gap-4"
+                    >
+                      <h3 className="font-bold text-2xl mb-6 text-primary">Période {idx + 1}</h3>
+                      <div className="flex flex-col gap-4">
+                        <div className="flex flex-col items-center mb-2">
+                          <span className="font-semibold text-muted-foreground text-base">Magasin</span>
+                          <span className="font-extrabold text-foreground text-xl mt-1 text-center">{period.nomMagasin}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-muted-foreground">Montant TTC</span>
+                          <span className="font-bold text-blue-500 text-lg text-right">{period.montantTTC?.toLocaleString()} DH</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-muted-foreground">Quantité</span>
+                          <span className="font-bold text-green-500 text-right">{period.quantite?.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-muted-foreground">Nombre Tickets</span>
+                          <span className="font-bold text-purple-500 text-right">{period.nombreTickets?.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-muted-foreground">Prix Moyen</span>
+                          <span className="font-bold text-orange-500 text-right">{period.prixMoyen?.toFixed(2)} DH</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-muted-foreground">Taux Objectif</span>
+                          <span className="font-bold text-cyan-500 text-right">{period.tauxObjectif?.toFixed(2)}%</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-muted-foreground">Débit Moyen</span>
+                          <span className="font-bold text-pink-500 text-right">{period.debitMoyen?.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-muted-foreground">Panier Moyen</span>
+                          <span className="font-bold text-yellow-500 text-right">{period.panierMoyen?.toFixed(2)} DH</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Tickets</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-semibold">
-                        {periodComparison.periodeActuelle.tickets.toLocaleString()}
-                      </span>
-                      <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {periodComparison.periodePrecedente.tickets.toLocaleString()}
-                      </span>
-                      {getTrendIcon(periodComparison.ecart.tickets)}
-                      <span className={getTrendColor(periodComparison.ecart.tickets)}>
-                        {formatPercentage(periodComparison.ecart.tickets)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Quantité</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-semibold">
-                        {periodComparison.periodeActuelle.quantite.toLocaleString()}
-                      </span>
-                      <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {periodComparison.periodePrecedente.quantite.toLocaleString()}
-                      </span>
-                      {getTrendIcon(periodComparison.ecart.quantite)}
-                      <span className={getTrendColor(periodComparison.ecart.quantite)}>
-                        {formatPercentage(periodComparison.ecart.quantite)}
-                      </span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               )}
             </CardContent>
@@ -313,191 +330,78 @@ export const Comparateur: React.FC = () => {
         </div>
 
         {/* Comparison Results */}
-        {compareData && (
+        {compareData && Array.isArray(compareData.magasins) && compareData.magasins.length > 0 && (
           <div className="space-y-6">
             {/* Performance Overview */}
             <Card className="shadow-elegant">
               <CardHeader>
                 <CardTitle>Vue d'ensemble des Performances</CardTitle>
                 <CardDescription>
-                  Comparaison des KPIs pour la période du {format(dateRange.from, 'PPP', { locale: fr })} au {format(dateRange.to, 'PPP', { locale: fr })}
+                  Comparaison des KPIs pour les magasins sélectionnés
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  {compareData.magasins.map((store) => (
-                    <div key={store.code} className="p-4 rounded-lg border border-border bg-card/50">
-                      <h4 className="font-semibold text-foreground mb-3">{store.nom}</h4>
-                      
+                  {compareData.magasins.map((store: any, idx: number) => (
+                    <div key={store.code || idx} className="p-4 rounded-lg border border-border bg-card/50">
+                      <h4 className="font-semibold text-foreground mb-3">{store.nomMagasin || store.nom || '-'}</h4>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">CA</span>
                           <span className="font-bold text-foreground">
-                            {store.ca.toLocaleString()}€
+                            {typeof store.montantTTC === 'number' ? store.montantTTC.toLocaleString() : (typeof store.ca === 'number' ? store.ca.toLocaleString() : '-')} DH
                           </span>
                         </div>
-                        
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Tickets</span>
                           <span className="font-semibold text-foreground">
-                            {store.tickets.toLocaleString()}
+                            {typeof store.nombreTickets === 'number' ? store.nombreTickets.toLocaleString() : (typeof store.tickets === 'number' ? store.tickets.toLocaleString() : '-')}
                           </span>
                         </div>
-                        
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Quantité</span>
                           <span className="font-semibold text-foreground">
-                            {store.quantite.toLocaleString()}
+                            {typeof store.quantite === 'number' ? store.quantite.toLocaleString() : '-'}
                           </span>
                         </div>
-                        
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">Panier Moyen</span>
                           <span className="font-semibold text-foreground">
-                            {store.panierMoyen.toFixed(2)}€
+                            {typeof store.panierMoyen === 'number' ? store.panierMoyen.toFixed(2) : '-'} DH
                           </span>
                         </div>
                       </div>
-
                       {/* Performance Badge */}
                       <div className="mt-3">
-                        {store.ca === Math.max(...compareData.magasins.map(s => s.ca)) && (
-                          <Badge variant="default" className="gradient-primary">
-                            🏆 Meilleur CA
-                          </Badge>
-                        )}
-                        {store.tickets === Math.max(...compareData.magasins.map(s => s.tickets)) && (
-                          <Badge variant="secondary" className="ml-1">
-                            👥 + Tickets
-                          </Badge>
-                        )}
+                        {/* Add badges if needed */}
                       </div>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-
-            {/* Charts */}
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Bar Chart */}
-              <Card className="shadow-elegant">
-                <CardHeader>
-                  <CardTitle>Comparaison des Chiffres d'Affaires</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                      <XAxis 
-                        dataKey="name" 
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                      />
-                      <YAxis 
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                        tickFormatter={(value) => `${value.toLocaleString()}€`}
-                      />
-                      <Tooltip 
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--popover))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px',
-                        }}
-                        formatter={(value: any) => [`${value.toLocaleString()}€`, 'CA']}
-                      />
-                      <Bar 
-                        dataKey="ca" 
-                        fill="hsl(var(--primary))" 
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Radar Chart */}
-              <Card className="shadow-elegant">
-                <CardHeader>
-                  <CardTitle>Analyse Multi-Critères</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <RadarChart data={radarData}>
-                      <PolarGrid stroke="hsl(var(--muted))" />
-                      <PolarAngleAxis 
-                        dataKey="magasin" 
-                        tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                      />
-                      <PolarRadiusAxis 
-                        angle={90} 
-                        domain={[0, 100]}
-                        tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                      />
-                      <Radar
-                        name="Performance"
-                        dataKey="CA"
-                        stroke="hsl(var(--primary))"
-                        fill="hsl(var(--primary))"
-                        fillOpacity={0.1}
-                        strokeWidth={2}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Ranking Table */}
+            {/* Écarts Summary Card */}
             <Card className="shadow-elegant">
               <CardHeader>
-                <CardTitle>Classement Détaillé</CardTitle>
+                <CardTitle>Écarts entre Magasins</CardTitle>
+                <CardDescription>
+                  Différences entre le magasin le plus performant et le moins performant
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {compareData.magasins
-                    .sort((a, b) => b.ca - a.ca)
-                    .map((store, index) => (
-                      <div key={store.code} className="flex items-center space-x-4 p-4 rounded-lg bg-muted/30">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
-                          index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
-                          index === 1 ? 'bg-gray-500/20 text-gray-400' :
-                          index === 2 ? 'bg-orange-500/20 text-orange-500' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          {index + 1}
-                        </div>
-                        
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-foreground">{store.nom}</h4>
-                          <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
-                            <span className="flex items-center space-x-1">
-                              <DollarSign className="h-3 w-3" />
-                              <span>{store.ca.toLocaleString()}€</span>
-                            </span>
-                            <span className="flex items-center space-x-1">
-                              <ShoppingCart className="h-3 w-3" />
-                              <span>{store.tickets} tickets</span>
-                            </span>
-                            <span className="flex items-center space-x-1">
-                              <Package className="h-3 w-3" />
-                              <span>{store.quantite} unités</span>
-                            </span>
-                            <span className="flex items-center space-x-1">
-                              <Target className="h-3 w-3" />
-                              <span>{store.panierMoyen.toFixed(2)}€ panier</span>
-                            </span>
-                          </div>
-                        </div>
-                        
-                        {index === 0 && (
-                          <Badge variant="default" className="gradient-primary">
-                            Champion
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="p-4 rounded-lg border border-border bg-card/50 flex flex-col items-center">
+                    <span className="text-sm text-muted-foreground">Écart CA</span>
+                    <span className="font-bold text-blue-400 text-lg">{compareData.ecartCA?.toLocaleString()} DH</span>
+                  </div>
+                  <div className="p-4 rounded-lg border border-border bg-card/50 flex flex-col items-center">
+                    <span className="text-sm text-muted-foreground">Écart Tickets</span>
+                    <span className="font-bold text-green-400 text-lg">{compareData.ecartTickets?.toLocaleString()}</span>
+                  </div>
+                  <div className="p-4 rounded-lg border border-border bg-card/50 flex flex-col items-center">
+                    <span className="text-sm text-muted-foreground">Écart Quantité</span>
+                    <span className="font-bold text-purple-400 text-lg">{compareData.ecartQuantite?.toLocaleString()}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
