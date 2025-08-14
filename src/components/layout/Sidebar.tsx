@@ -31,10 +31,13 @@ export const Sidebar: React.FC = () => {
     <div className="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center border-b border-sidebar-border px-6">
-          <div className="flex items-center space-x-2">
-            <TrendingUp className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-sidebar-foreground">SofiSoft</span>
+        <div className="flex flex-col items-center justify-center h-32 border-b border-sidebar-border px-6 pt-4 pb-2">
+          <div className="flex items-center justify-center h-14 w-14 rounded-full bg-primary/10 overflow-hidden">
+            <img
+              src="/1631415508046.jpeg"
+              alt="Sofisoft Logo"
+              className="h-full w-full object-cover"
+            />
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -60,9 +60,16 @@ export const Stores: React.FC = () => {
     }
   };
 
+  // Debounce refresh on dateRange change
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
-    fetchMagasins();
-    // eslint-disable-next-line
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchMagasins();
+    }, 300); // 100ms debounce
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [dateRange]);
 
   // Optionally, update dateMin/dateMax if you want to allow dynamic range
@@ -111,10 +118,10 @@ export const Stores: React.FC = () => {
               placeholder="Rechercher par nom ou code..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="input input-bordered w-64 px-3 py-2 rounded border focus:outline-none"
+              className="input input-bordered w-64 px-3 py-2 rounded border focus:outline-none text-black"
             />
             {/* Power BI-style date range slicer */}
-            <div className="flex flex-col items-center p-2 bg-muted rounded shadow-md min-w-[340px]">
+            <div className="flex flex-col items-center p-2 bg-black rounded-lg shadow-lg min-w-[340px] border border-blue-400" style={{ boxShadow: '0 0 12px #38bdf8' }}>
               <div className="font-semibold mb-1">Période</div>
               <div className="flex items-center gap-2 mb-2">
                 <input
@@ -123,8 +130,8 @@ export const Stores: React.FC = () => {
                   min={new Date(dateMin).toISOString().slice(0, 10)}
                   max={new Date(dateRange[1]).toISOString().slice(0, 10)}
                   onChange={e => setDateRange([new Date(e.target.value).getTime(), dateRange[1]])}
-                  className="w-36 px-2 py-1 rounded border"
-                  style={{ color: '#111', fontWeight: 700, background: 'white' }}
+                  className="w-36 px-2 py-1 rounded border border-gray-700 bg-gray-900 text-white font-bold focus:border-primary focus:ring-2 focus:ring-primary"
+                  style={{ boxShadow: '0 0 0 2px #0ea5e9' }}
                 />
                 <span>→</span>
                 <input
@@ -133,8 +140,8 @@ export const Stores: React.FC = () => {
                   min={new Date(dateRange[0]).toISOString().slice(0, 10)}
                   max={new Date(dateMax).toISOString().slice(0, 10)}
                   onChange={e => setDateRange([dateRange[0], new Date(e.target.value).getTime()])}
-                  className="w-36 px-2 py-1 rounded border"
-                  style={{ color: '#111', fontWeight: 700, background: 'white' }}
+                  className="w-36 px-2 py-1 rounded border border-gray-700 bg-gray-900 text-white font-bold focus:border-primary focus:ring-2 focus:ring-primary"
+                  style={{ boxShadow: '0 0 0 2px #0ea5e9' }}
                 />
               </div>
               <Button

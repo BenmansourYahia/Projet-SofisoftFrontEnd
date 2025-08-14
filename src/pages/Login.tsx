@@ -104,14 +104,16 @@ export const Login: React.FC = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 bg-primary/20 rounded-full flex items-center justify-center">
-              <TrendingUp className="h-8 w-8 text-primary" />
-            </div>
+          <div className="flex flex-col items-center justify-center mb-4">
+            <img
+              src="/sofisoft-logo-new.png"
+              alt="Sofisoft Logo"
+              className="h-24 w-24 object-contain rounded-full bg-primary/20"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">SofiSoft</h1>
+          <h1 className="text-3xl font-bold text-foreground sr-only">SofiSoft</h1>
           <p className="text-muted-foreground mt-2">
-            Plateforme d'analyse retail et gestion de stocks
+            Plateforme d'analyse de magasins et  stocks
           </p>
         </div>
 
