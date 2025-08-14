@@ -188,26 +188,46 @@ export const Dashboard: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center space-x-4">
-            <CalendarDateRangePicker
-              date={dateRange}
-              onDateChange={(range) => {
-                if (range.from && range.to) setDateRange(range);
-              }}
-              className="w-64"
-            />
-            <Select value={selectedStore} onValueChange={setSelectedStore}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Sélectionner un magasin" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Tous les magasins</SelectItem>
-                {user?.magasins?.map((magasin) => (
-                  <SelectItem key={magasin.code} value={magasin.code}>
-                    {magasin.nom}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <CalendarDateRangePicker
+                  date={dateRange}
+                  onDateChange={(range) => {
+                    if (range.from && range.to) setDateRange(range);
+                  }}
+                  className="w-64"
+                />
+                <Button
+                  variant="secondary"
+                  onClick={() => setDateRange({ from: new Date('2022-06-24'), to: new Date('2024-06-26') })}
+                  className="h-10"
+                >
+                  Réinitialiser Dates
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Select value={selectedStore} onValueChange={setSelectedStore}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Sélectionner un magasin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">Tous les magasins</SelectItem>
+                    {user?.magasins?.map((magasin) => (
+                      <SelectItem key={magasin.code} value={magasin.code}>
+                        {magasin.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="secondary"
+                  onClick={() => setSelectedStore('ALL')}
+                  className="h-10"
+                >
+                  Réinitialiser Magasin
+                </Button>
+              </div>
+            </div>
             <Button 
               onClick={refreshData} 
               disabled={refreshing}
@@ -223,33 +243,25 @@ export const Dashboard: React.FC = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Chiffre d'Affaires"
-            value={`${totalCA.toLocaleString()} €`}
-            change={15.2}
-            changeLabel="vs mois dernier"
+            value={totalCA.toLocaleString()}
             icon={DollarSign}
             variant="success"
           />
           <MetricCard
             title="Nombre de Tickets"
             value={totalTickets.toLocaleString()}
-            change={8.5}
-            changeLabel="vs mois dernier"
             icon={ShoppingCart}
             variant="default"
           />
           <MetricCard
             title="Quantité Vendue"
             value={totalQuantite.toLocaleString()}
-            change={-2.1}
-            changeLabel="vs mois dernier"
             icon={Package}
             variant="warning"
           />
           <MetricCard
             title="Prix Moyen"
-            value={`${avgPrixMoyen.toFixed(2)} €`}
-            change={5.3}
-            changeLabel="vs mois dernier"
+            value={`${avgPrixMoyen.toFixed(2)} DH`}
             icon={TrendingUp}
             variant="success"
           />
@@ -280,7 +292,7 @@ export const Dashboard: React.FC = () => {
                   <YAxis 
                     stroke="hsl(var(--muted-foreground))"
                     fontSize={12}
-                    tickFormatter={(value) => `${value.toLocaleString()}€`}
+                    tickFormatter={(value) => `${value.toLocaleString()} DH`}
                   />
                   <Tooltip 
                     contentStyle={{
@@ -288,7 +300,7 @@ export const Dashboard: React.FC = () => {
                       border: '1px solid hsl(var(--border))',
                       borderRadius: '8px',
                     }}
-                    formatter={(value: any) => [`${value.toLocaleString()}€`, 'CA']}
+                    formatter={(value: any) => [`${value.toLocaleString()} DH`, 'CA']}
                   />
                   <Line 
                     type="monotone" 
@@ -336,10 +348,10 @@ export const Dashboard: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-foreground">
-                        {store.ca.toLocaleString()}€
+                        {store.ca.toLocaleString()} DH
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {store.panierMoyen.toFixed(2)}€/panier
+                        {store.panierMoyen.toFixed(2)} DH/panier
                       </p>
                     </div>
                   </div>
@@ -367,7 +379,7 @@ export const Dashboard: React.FC = () => {
                       Nouvelle vente - {item.magasinNom}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      CA: {item.ca.toLocaleString()}€ • {item.tickets} tickets
+                      CA: {item.ca.toLocaleString()} DH • {item.tickets} tickets
                     </p>
                   </div>
                   <div className="text-sm text-muted-foreground">

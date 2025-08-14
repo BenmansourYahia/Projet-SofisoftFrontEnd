@@ -60,7 +60,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold text-card-foreground mb-1">
-          {typeof value === 'number' ? value.toLocaleString() : value}
+          {title === "Chiffre d'Affaires" ? `${typeof value === 'number' ? value.toLocaleString() : value} DH` : (typeof value === 'number' ? value.toLocaleString() : value)}
         </div>
         {change !== undefined && (
           <p className="text-xs">
