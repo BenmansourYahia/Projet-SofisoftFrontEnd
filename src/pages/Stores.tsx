@@ -137,6 +137,13 @@ export const Stores: React.FC = () => {
                   style={{ color: '#111', fontWeight: 700, background: 'white' }}
                 />
               </div>
+              <Button
+                variant="secondary"
+                className="mb-2 w-full"
+                onClick={() => setDateRange([dateMin, dateMax])}
+              >
+                Réinitialiser la période
+              </Button>
               <Slider
                 value={dateRange}
                 min={dateMin}
@@ -186,9 +193,11 @@ export const Stores: React.FC = () => {
                     <span className="font-bold text-lg text-white drop-shadow">{store.panierMoyen?.toFixed(2) || 0}€</span>
                   </div>
                 </div>
-                <div className="mt-3 flex justify-center">
-                  <span className="text-xs text-gray-200 bg-gray-800 rounded px-3 py-1 shadow">Gérant: {store.gerant || 'N/A'}</span>
-                </div>
+                {store.gerant && store.gerant !== 'N/A' && (
+                  <div className="mt-3 flex justify-center">
+                    <span className="text-xs text-gray-200 bg-gray-800 rounded px-3 py-1 shadow">Gérant: {store.gerant}</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
