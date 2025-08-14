@@ -148,16 +148,28 @@ const Sales: React.FC = () => {
           </button>
           <input
             type="date"
-            className="border border-zinc-700 rounded px-3 py-2 text-white bg-black focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="border border-zinc-700 rounded px-3 py-2 text-white bg-black focus:outline-none focus:ring-2 focus:ring-blue-400 dark:calendar-dark"
             value={debut}
             onChange={e => setDebut(e.target.value)}
+            style={{ colorScheme: 'dark' }}
           />
           <input
             type="date"
-            className="border border-zinc-700 rounded px-3 py-2 text-white bg-black focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="border border-zinc-700 rounded px-3 py-2 text-white bg-black focus:outline-none focus:ring-2 focus:ring-blue-400 dark:calendar-dark"
             value={fin}
             onChange={e => setFin(e.target.value)}
+            style={{ colorScheme: 'dark' }}
           />
+          <button
+            className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded shadow font-semibold transition"
+            onClick={() => {
+              setDebut('2023-01-01');
+              setFin('2023-12-31');
+            }}
+            style={{ minWidth: '100px' }}
+          >
+            Réinitialiser Dates
+          </button>
           <button
             className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow font-semibold transition"
             onClick={fetchSales}

@@ -194,15 +194,26 @@ const Stock: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredProducts.slice(0, 50).map((item, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-gray-900 text-white shadow-lg border border-gray-700 flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-5 w-5 text-primary" />
-                      <span className="font-semibold text-lg">{item.designation}</span>
+                  <div
+                    key={idx}
+                    className="bg-gradient-to-br from-black via-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-6 flex flex-col gap-3 shadow-2xl hover:shadow-blue-900 transition duration-300 relative"
+                    style={{
+                      boxShadow:
+                        '0 6px 32px 0 rgba(0,0,0,0.85), 0 2px 12px 0 rgba(30,64,175,0.18)',
+                      border: '2px solid #23272f',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div className="absolute top-0 right-0 h-16 w-16 bg-blue-900 opacity-20 rounded-bl-2xl blur-xl pointer-events-none" />
+                    <div className="font-bold text-xl mb-1 text-blue-400 drop-shadow-lg tracking-wide">{item.designation}</div>
+                    <div className="text-sm text-gray-300">Code Produit: <span className="font-semibold text-white drop-shadow">{item.codeProduit}</span></div>
+                    <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md mt-2">
+                      <span className="text-xs text-gray-400">Quantité en stock</span>
+                      <span className="font-bold text-lg text-white drop-shadow">{item.quantite}</span>
                     </div>
-                    <div className="flex flex-col text-sm mt-2 gap-1">
-                      <span>Code: {item.codeProduit}</span>
-                      <span>Quantité: {item.quantite}</span>
-                      <span>Magasin: {item.magasin}</span>
+                    <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md mt-2">
+                      <span className="text-xs text-gray-400">Magasin</span>
+                      <span className="font-bold text-lg text-blue-400 drop-shadow">{item.magasin}</span>
                     </div>
                   </div>
                 ))}
@@ -254,14 +265,22 @@ const Stock: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredGlobalStock.map((item, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-gray-900 text-white shadow-lg border border-gray-700 flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <Package className="h-5 w-5 text-primary" />
-                      <span className="font-semibold text-lg">{item.designation}</span>
-                    </div>
-                    <div className="flex flex-col text-sm mt-2 gap-1">
-                      <span>Code: {item.codeProduit}</span>
-                      <span>Quantité: {item.quantite}</span>
+                  <div
+                    key={idx}
+                    className="bg-gradient-to-br from-black via-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-6 flex flex-col gap-3 shadow-2xl hover:shadow-blue-900 transition duration-300 relative"
+                    style={{
+                      boxShadow:
+                        '0 6px 32px 0 rgba(0,0,0,0.85), 0 2px 12px 0 rgba(30,64,175,0.18)',
+                      border: '2px solid #23272f',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div className="absolute top-0 right-0 h-16 w-16 bg-blue-900 opacity-20 rounded-bl-2xl blur-xl pointer-events-none" />
+                    <div className="font-bold text-xl mb-1 text-blue-400 drop-shadow-lg tracking-wide">{item.designation}</div>
+                    <div className="text-sm text-gray-300">Code Produit: <span className="font-semibold text-white drop-shadow">{item.codeProduit}</span></div>
+                    <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md mt-2">
+                      <span className="text-xs text-gray-400">Quantité en stock</span>
+                      <span className="font-bold text-lg text-white drop-shadow">{item.quantite}</span>
                     </div>
                   </div>
                 ))}
