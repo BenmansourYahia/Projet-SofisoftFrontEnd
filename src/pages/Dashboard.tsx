@@ -72,6 +72,8 @@ export const Dashboard: React.FC = () => {
             quantite: item.quantite,
             prixMoyen: item.prixMoyen,
             panierMoyen: item.panierMoyen,
+            debitMoyen: item.debitMoyen,
+            tauxObjectif: item.tauxObjectif,
             periode: item.periode || '',
           }))
         );
@@ -85,6 +87,8 @@ export const Dashboard: React.FC = () => {
             quantite: item.quantite,
             prixMoyen: item.prixMoyen,
             panierMoyen: item.panierMoyen,
+            debitMoyen: item.debitMoyen,
+            tauxObjectif: item.tauxObjectif,
             periode: item.periode || '',
           }))
         );
@@ -152,6 +156,15 @@ export const Dashboard: React.FC = () => {
   const totalQuantite = filteredData.reduce((sum, item) => sum + (item.quantite || 0), 0);
   const avgPrixMoyen = filteredData.length > 0 
     ? filteredData.reduce((sum, item) => sum + (item.prixMoyen || 0), 0) / filteredData.length 
+    : 0;
+  const avgPanierMoyen = filteredData.length > 0 
+    ? filteredData.reduce((sum, item) => sum + (item.panierMoyen || 0), 0) / filteredData.length 
+    : 0;
+  const avgDebitMoyen = filteredData.length > 0 
+    ? filteredData.reduce((sum, item) => sum + (item.debitMoyen || 0), 0) / filteredData.length 
+    : 0;
+  const avgTauxObjectif = filteredData.length > 0 
+    ? filteredData.reduce((sum, item) => sum + (item.tauxObjectif || 0), 0) / filteredData.length 
     : 0;
 
   // Format chart data
@@ -269,6 +282,34 @@ export const Dashboard: React.FC = () => {
             icon={TrendingUp}
             variant="success"
           />
+          <MetricCard
+            title="Panier Moyen"
+            value={`${avgPanierMoyen.toFixed(2)} DH`}
+            icon={TrendingUp}
+            variant="default"
+          />
+          <MetricCard
+            title="Débit Moyen"
+            value={`${avgDebitMoyen.toFixed(2)} DH`}
+            icon={TrendingUp}
+            variant="default"
+          />
+          <Card className="flex flex-col items-center justify-center p-4 border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 w-full">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Taux Objectif</CardTitle>
+            </CardHeader>
+            <CardContent className="w-full">
+              <div className="flex items-center gap-2">
+                <div className="w-full h-4 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-4 bg-primary rounded-full"
+                    style={{ width: `${Math.min(100, Math.round(avgTauxObjectif))}%` }}
+                  ></div>
+                </div>
+                <span className="text-xs font-bold text-primary">{avgTauxObjectif.toFixed(1)}%</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Charts */}

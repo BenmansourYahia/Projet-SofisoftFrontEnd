@@ -313,46 +313,48 @@ export const Comparateur: React.FC = () => {
               {Array.isArray(periodComparison) && periodComparison.length === 2 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-border">
                   {periodComparison.map((period, idx) => (
-                    <div
-                      key={idx}
-                      className="rounded-2xl shadow-elegant bg-card/80 border border-border p-8 flex flex-col gap-4"
-                    >
-                      <h3 className="font-bold text-2xl mb-6 text-primary">Période {idx + 1}</h3>
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-col items-center mb-2">
-                          <span className="font-semibold text-muted-foreground text-base">Magasin</span>
-                          <span className="font-extrabold text-foreground text-xl mt-1 text-center">{period.nomMagasin}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-muted-foreground">Montant TTC</span>
-                          <span className="font-bold text-blue-500 text-lg text-right">{period.montantTTC?.toLocaleString()} DH</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-muted-foreground">Quantité</span>
-                          <span className="font-bold text-green-500 text-right">{period.quantite?.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-muted-foreground">Nombre Tickets</span>
-                          <span className="font-bold text-purple-500 text-right">{period.nombreTickets?.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-muted-foreground">Prix Moyen</span>
-                          <span className="font-bold text-orange-500 text-right">{period.prixMoyen?.toFixed(2)} DH</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-muted-foreground">Taux Objectif</span>
-                          <span className="font-bold text-cyan-500 text-right">{period.tauxObjectif?.toFixed(2)}%</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-muted-foreground">Débit Moyen</span>
-                          <span className="font-bold text-pink-500 text-right">{period.debitMoyen?.toFixed(2)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-muted-foreground">Panier Moyen</span>
-                          <span className="font-bold text-yellow-500 text-right">{period.panierMoyen?.toFixed(2)} DH</span>
+                    period ? (
+                      <div
+                        key={idx}
+                        className="rounded-2xl shadow-elegant bg-card/80 border border-border p-8 flex flex-col gap-4"
+                      >
+                        <h3 className="font-bold text-2xl mb-6 text-primary">Période {idx + 1}</h3>
+                        <div className="flex flex-col gap-4">
+                          <div className="flex flex-col items-center mb-2">
+                            <span className="font-semibold text-muted-foreground text-base">Magasin</span>
+                            <span className="font-extrabold text-foreground text-xl mt-1 text-center">{period.nomMagasin}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-muted-foreground">Montant TTC</span>
+                            <span className="font-bold text-blue-500 text-lg text-right">{period.montantTTC?.toLocaleString()} DH</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-muted-foreground">Quantité</span>
+                            <span className="font-bold text-green-500 text-right">{period.quantite?.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-muted-foreground">Nombre Tickets</span>
+                            <span className="font-bold text-purple-500 text-right">{period.nombreTickets?.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-muted-foreground">Prix Moyen</span>
+                            <span className="font-bold text-orange-500 text-right">{period.prixMoyen?.toFixed(2)} DH</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-muted-foreground">Taux Objectif</span>
+                            <span className="font-bold text-cyan-500 text-right">{period.tauxObjectif?.toFixed(2)}%</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-muted-foreground">Débit Moyen</span>
+                            <span className="font-bold text-pink-500 text-right">{period.debitMoyen?.toFixed(2)}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-muted-foreground">Panier Moyen</span>
+                            <span className="font-bold text-yellow-500 text-right">{period.panierMoyen?.toFixed(2)} DH</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ) : null
                   ))}
                 </div>
               )}

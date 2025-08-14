@@ -16,6 +16,8 @@ export interface DashboardModel {
   quantite: number;
   prixMoyen: number;
   panierMoyen: number;
+  debitMoyen: number;
+  tauxObjectif: number;
   periode: string;
 }
 
