@@ -30,13 +30,14 @@ export const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   // Default date range: last 30 days counting today
+  const getDefaultDateRange = () => {
   const today = new Date();
-  const thirtyDaysAgo = new Date();
+  today.setHours(0,0,0,0);
+  const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(today.getDate() - 29);
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: thirtyDaysAgo,
-    to: today,
-  });
+  return { from: thirtyDaysAgo, to: today };
+};
+const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDefaultDateRange());
 
   const fetchDashboardData = async () => {
     try {
@@ -207,20 +208,20 @@ export const Dashboard: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <CalendarDateRangePicker
-                  date={dateRange}
-                  onDateChange={(range) => {
-                    if (range.from && range.to) setDateRange(range);
-                  }}
-                  className="w-64"
-                />
-                <Button
-                  variant="secondary"
-                  onClick={() => setDateRange({ from: new Date('2022-06-24'), to: new Date('2024-06-26') })}
-                  className="h-10"
-                >
-                  Réinitialiser Dates
-                </Button>
+               <CalendarDateRangePicker
+  date={dateRange}
+  onDateChange={(range) => {
+    if (range.from && range.to) setDateRange(range);
+  }}
+  className="w-64"
+/>
+              <Button
+  variant="secondary"
+  onClick={() => setDateRange(getDefaultDateRange())}
+  className="h-10"
+>
+  Réinitialiser Dates
+</Button>
               </div>
               <div className="flex items-center gap-2">
                 <Select value={selectedStore} onValueChange={setSelectedStore}>
