@@ -1,7 +1,23 @@
 import axios from 'axios';
 
-// Configure base API URL - update this to your backend URL
-const API_BASE_URL = 'http://localhost:8080'; // Backend Spring Boot server
+// Configuration d'IP dynamique
+const getServerIP = (): string => {
+  return localStorage.getItem('serverIP') || '192.168.1.10';
+};
+
+const getServerPort = (): string => {
+  return localStorage.getItem('serverPort') || '8080';
+};
+
+// Construire l'URL API dynamiquement
+const getAPIBaseURL = (): string => {
+  const ip = getServerIP();
+  const port = getServerPort();
+  return `http://${ip}:${port}`;
+};
+
+// Configure base API URL - mise à jour dynamique
+let API_BASE_URL = getAPIBaseURL();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,6 +25,41 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Fonction pour mettre à jour la configuration IP
+export const updateServerConfig = (ip: string, port: string = '8080'): void => {
+  localStorage.setItem('serverIP', ip);
+  localStorage.setItem('serverPort', port);
+  API_BASE_URL = `http://${ip}:${port}`;
+  api.defaults.baseURL = API_BASE_URL;
+};
+
+// Fonction pour tester la connexion au serveur
+export const testServerConnection = async (ip: string, port: string = '8080'): Promise<boolean> => {
+  try {
+    const testURL = `http://${ip}:${port}/api/health`; // endpoint de test
+    const response = await axios.get(testURL, { timeout: 5000 });
+    return response.status === 200;
+  } catch (error) {
+    // Essayer un endpoint alternatif
+    try {
+      const testURL = `http://${ip}:${port}/actuator/health`;
+      const response = await axios.get(testURL, { timeout: 5000 });
+      return response.status === 200;
+    } catch (altError) {
+      return false;
+    }
+  }
+};
+
+// Fonction pour obtenir la configuration actuelle
+export const getCurrentServerConfig = () => {
+  return {
+    ip: getServerIP(),
+    port: getServerPort(),
+    fullURL: getAPIBaseURL()
+  };
+};
 
 // Add request interceptor for authentication
 api.interceptors.request.use((config) => {
