@@ -68,12 +68,10 @@ export interface ComparePeriodeResponse {
 
 // Product Models
 export interface Product {
-  codeProduit: string;
-  codeBarres: string;
+  numProduit: number;
   designation: string;
-  prixVente: number;
-  quantiteVendue?: number;
-  ca?: number;
+  codeProduit: string;
+  quantite: number;
 }
 
 export interface ProductDimension {
@@ -87,13 +85,10 @@ export interface ProductDimension {
 
 // Stock Models
 export interface StockItem {
-  codeProduit: string;
-  codeBarres: string;
+  numProduit: number;
+  magasin: string;
   designation: string;
-  quantiteStock: number;
-  valeurStock: number;
-  magasinCode: string;
-  dimensions?: ProductDimension;
+  quantite: number;
 }
 
 // Sales Models
