@@ -164,9 +164,6 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
   const avgDebitMoyen = filteredData.length > 0 
     ? filteredData.reduce((sum, item) => sum + (item.debitMoyen || 0), 0) / filteredData.length 
     : 0;
-  const avgTauxObjectif = filteredData.length > 0 
-    ? filteredData.reduce((sum, item) => sum + (item.tauxObjectif || 0), 0) / filteredData.length 
-    : 0;
 
   // Format chart data
   const chartData = evolutionData
@@ -258,7 +255,7 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
         </div>
 
         {/* Metrics Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <MetricCard
             title="Chiffre d'Affaires"
             value={totalCA.toLocaleString()}
@@ -295,22 +292,6 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
             icon={TrendingUp}
             variant="default"
           />
-          <Card className="flex flex-col items-center justify-center p-4 border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 w-full">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Taux Objectif</CardTitle>
-            </CardHeader>
-            <CardContent className="w-full">
-              <div className="flex items-center gap-2">
-                <div className="w-full h-4 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-4 bg-primary rounded-full"
-                    style={{ width: `${Math.min(100, Math.round(avgTauxObjectif))}%` }}
-                  ></div>
-                </div>
-                <span className="text-xs font-bold text-primary">{avgTauxObjectif.toFixed(1)}%</span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Charts */}
