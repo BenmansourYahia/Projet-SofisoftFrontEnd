@@ -1,22 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { 
   User, 
-  Mail, 
   Store, 
-  Shield, 
-  Edit, 
-  Save, 
-  X,
-  Settings,
-  Key,
-  Bell
+  Settings, 
+  Edit
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -25,35 +17,32 @@ export const Profile: React.FC = () => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   
-  const [editing, setEditing] = useState(false);
-  const [profileData, setProfileData] = useState({
-    prenom: user?.prenom || '',
-    nom: user?.nom || '',
-    email: user?.email || '',
-    username: user?.username || '',
-  });
+  const [ip, setIp] = useState<string | null>(null);
+  const [editingIp, setEditingIp] = useState(false);
+  const [newIp, setNewIp] = useState('');
 
-  const handleSave = async () => {
-    // In a real app, you would call an API to update the profile
-    setEditing(false);
-    toast({
-      title: 'Profil mis à jour',
-      description: 'Vos informations ont été sauvegardées avec succès',
-    });
+  // 🔹 Récupérer l'adresse IP publique
+  useEffect(() => {
+    fetch("https://api.ipify.org?format=json")
+      .then(res => res.json())
+      .then(data => setIp(data.ip))
+      .catch(() => setIp("Non disponible"));
+  }, []);
+
+  const handleSaveIp = () => {
+    if (newIp) {
+      setIp(newIp);
+      setEditingIp(false);
+      toast({
+        title: 'IP mise à jour',
+        description: 'L\'adresse IP a été modifiée avec succès',
+      });
+    }
   };
 
-  const handleCancel = () => {
-    setProfileData({
-      prenom: user?.prenom || '',
-      nom: user?.nom || '',
-      email: user?.email || '',
-      username: user?.username || '',
-    });
-    setEditing(false);
-  };
-
-  const handleChange = (field: string, value: string) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+  const handleCancelIp = () => {
+    setEditingIp(false);
+    setNewIp('');
   };
 
   return (
@@ -67,147 +56,94 @@ export const Profile: React.FC = () => {
               Gérez vos informations personnelles et préférences
             </p>
           </div>
-          {!editing && (
-            <Button onClick={() => setEditing(true)} variant="outline">
-              <Edit className="h-4 w-4 mr-2" />
-              Modifier
-            </Button>
-          )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Profile Information */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Personal Information */}
+            {/* Avatar & Nom centré */}
             <Card className="shadow-elegant">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
-                  <span>Informations Personnelles</span>
-                </CardTitle>
-                <CardDescription>
-                  Vos informations de base et coordonnées
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="prenom">Prénom</Label>
-                    {editing ? (
-                      <Input
-                        id="prenom"
-                        value={profileData.prenom}
-                        onChange={(e) => handleChange('prenom', e.target.value)}
-                      />
-                    ) : (
-                      <p className="text-sm font-medium text-foreground px-3 py-2 bg-muted rounded-md">
-                        {user?.prenom}
-                      </p>
-                    )}
+              <CardContent className="p-6">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="h-28 w-28 bg-primary/20 rounded-full flex items-center justify-center">
+                    <User className="h-16 w-16 text-primary" />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="nom">Nom</Label>
-                    {editing ? (
-                      <Input
-                        id="nom"
-                        value={profileData.nom}
-                        onChange={(e) => handleChange('nom', e.target.value)}
-                      />
-                    ) : (
-                      <p className="text-sm font-medium text-foreground px-3 py-2 bg-muted rounded-md">
-                        {user?.nom}
-                      </p>
-                    )}
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold text-foreground">
+                      {user?.prenom} {user?.nom}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    {editing ? (
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profileData.email}
-                        onChange={(e) => handleChange('email', e.target.value)}
-                      />
-                    ) : (
-                      <p className="text-sm font-medium text-foreground px-3 py-2 bg-muted rounded-md">
-                        {user?.email}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="username">Nom d'utilisateur</Label>
-                    {editing ? (
-                      <Input
-                        id="username"
-                        value={profileData.username}
-                        onChange={(e) => handleChange('username', e.target.value)}
-                      />
-                    ) : (
-                      <p className="text-sm font-medium text-foreground px-3 py-2 bg-muted rounded-md">
-                        {user?.username}
-                      </p>
-                    )}
-                  </div>
+                  <Badge variant="default" className="gradient-primary px-4 py-1">
+                    {user?.role || 'Utilisateur'}
+                  </Badge>
                 </div>
-
-                {editing && (
-                  <div className="flex items-center space-x-4 pt-4">
-                    <Button onClick={handleSave} className="gradient-primary">
-                      <Save className="h-4 w-4 mr-2" />
-                      Sauvegarder
-                    </Button>
-                    <Button onClick={handleCancel} variant="outline">
-                      <X className="h-4 w-4 mr-2" />
-                      Annuler
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
-            {/* Security Settings */}
+            {/* Infos rapides */}
             <Card className="shadow-elegant">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5" />
-                  <span>Sécurité</span>
-                </CardTitle>
-                <CardDescription>
-                  Paramètres de sécurité et authentification
-                </CardDescription>
+                <CardTitle>Infos rapides</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-lg border border-border">
-                  <div className="flex items-center space-x-3">
-                    <Key className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium text-foreground">Mot de passe</p>
-                      <p className="text-sm text-muted-foreground">
-                        Dernière modification il y a 30 jours
-                      </p>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Adresse IP */}
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 flex flex-col">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm text-muted-foreground">Adresse IP</span>
+                      {!editingIp && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            setNewIp(ip || '');
+                            setEditingIp(true);
+                          }}
+                          className="h-6 px-2 text-xs"
+                        >
+                          Modifier
+                        </Button>
+                      )}
                     </div>
+                    {editingIp ? (
+                      <div className="flex gap-2">
+                        <Input
+                          value={newIp}
+                          onChange={(e) => setNewIp(e.target.value)}
+                          className="h-8 text-sm"
+                          placeholder="Nouvelle adresse IP"
+                        />
+                        <Button 
+                          onClick={handleSaveIp}
+                          size="sm"
+                          className="h-8 px-2"
+                        >
+                          ✓
+                        </Button>
+                        <Button 
+                          onClick={handleCancelIp}
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2"
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="font-mono text-lg font-semibold">
+                        {ip || 'Non défini'}
+                      </span>
+                    )}
                   </div>
-                  <Button variant="outline" size="sm">
-                    Modifier
-                  </Button>
-                </div>
 
-                <div className="flex items-center justify-between p-4 rounded-lg border border-border">
-                  <div className="flex items-center space-x-3">
-                    <Bell className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium text-foreground">Notifications</p>
-                      <p className="text-sm text-muted-foreground">
-                        Gérer les notifications email et push
-                      </p>
-                    </div>
+                  {/* Nombre de magasins */}
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-secondary/10 to-secondary/5 flex flex-col">
+                    <span className="text-sm text-muted-foreground">Magasins accessibles</span>
+                    <span className="font-mono text-lg font-semibold">
+                      {user?.magasins?.length || 0}
+                    </span>
                   </div>
-                  <Button variant="outline" size="sm">
-                    Configurer
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -234,27 +170,7 @@ export const Profile: React.FC = () => {
 
           {/* Sidebar Information */}
           <div className="space-y-6">
-            {/* User Summary */}
-            <Card className="shadow-elegant">
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="h-20 w-20 bg-primary/20 rounded-full flex items-center justify-center">
-                    <User className="h-10 w-10 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground">
-                      {user?.prenom} {user?.nom}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{user?.email}</p>
-                  </div>
-                  <Badge variant="default" className="gradient-primary">
-                    {user?.role}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Store Access */}
+            {/* Store Access - CONSERVÉ DE L'ANCIENNE VERSION */}
             <Card className="shadow-elegant">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
