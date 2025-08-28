@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Magasin {
   numMagasin: number;
@@ -51,7 +61,12 @@ const Sales: React.FC = () => {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [sortTotal, setSortTotal] = useState<'asc' | 'desc' | ''>('');
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Sale | null;
+    direction: 'asc' | 'desc';
+  }>({ key: null, direction: 'asc' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
 
   function formatDate(dateStr: string, isStart: boolean) {
     // Convert YYYY-MM-DD to DD-MM-YYYY
@@ -100,30 +115,64 @@ const Sales: React.FC = () => {
     // eslint-disable-next-line
   }, []);
 
+  const handleSort = (key: keyof Sale) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedSales = React.useMemo(() => {
+    if (!sortConfig.key) return sales;
+
+    return [...sales].sort((a, b) => {
+      const aVal = a[sortConfig.key!];
+      const bVal = b[sortConfig.key!];
+
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
+      }
+
+      const aStr = String(aVal).toLowerCase();
+      const bStr = String(bVal).toLowerCase();
+      
+      if (sortConfig.direction === 'asc') {
+        return aStr.localeCompare(bStr);
+      } else {
+        return bStr.localeCompare(aStr);
+      }
+    });
+  }, [sales, sortConfig]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedSales.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentSales = sortedSales.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
+  // Reset page when sales change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sales]);
+
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in bg-black min-h-screen py-8 px-4">
         <h1 className="text-3xl font-bold mb-6 text-white">Ventes</h1>
         <div className="mb-6 flex flex-wrap gap-4 items-center bg-zinc-900 p-4 rounded shadow">
-          <div className="flex gap-2 items-center">
-            <label className="text-white font-semibold">Total:</label>
-            <select
-              className="border border-zinc-700 rounded px-2 py-1 text-white bg-black"
-              value={sortTotal}
-              onChange={e => setSortTotal(e.target.value as 'asc' | 'desc' | '')}
-            >
-              <option value="">-- Aucun --</option>
-              <option value="asc">Croissant</option>
-              <option value="desc">Décroissant</option>
-            </select>
-            <button
-              className="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1 rounded shadow font-semibold transition ml-2"
-              onClick={() => setSortTotal('')}
-              disabled={sortTotal === ''}
-            >
-              Réinitialiser 
-            </button>
-          </div>
           <select
             className="border border-zinc-700 rounded px-3 py-2 text-white bg-black focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={numMagasin ?? ''}
@@ -179,48 +228,165 @@ const Sales: React.FC = () => {
           </button>
         </div>
         {error && <div className="text-red-500 mb-4 font-medium">{error}</div>}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {sales.length === 0 && !loading ? (
-            <div className="col-span-full text-center text-zinc-400">Aucune vente trouvée</div>
-          ) : (
-            [...sales]
-              .sort((a, b) => {
-                if (sortTotal === 'asc') return a.total - b.total;
-                if (sortTotal === 'desc') return b.total - a.total;
-                return 0;
-              })
-              .map((row, idx) => (
-                <div
-                  key={idx}
-                  className="bg-gradient-to-br from-black via-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-6 flex flex-col gap-3 shadow-2xl hover:shadow-blue-900 transition duration-300 relative"
-                  style={{
-                    boxShadow:
-                      '0 6px 32px 0 rgba(0,0,0,0.85), 0 2px 12px 0 rgba(30,64,175,0.18)',
-                    border: '2px solid #23272f',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div className="absolute top-0 right-0 h-16 w-16 bg-blue-900 opacity-20 rounded-bl-2xl blur-xl pointer-events-none" />
-                  <div className="font-bold text-xl mb-1 text-blue-400 drop-shadow-lg tracking-wide">{row.designation}</div>
-                  <div className="text-sm text-gray-300">Code Produit: <span className="font-semibold text-white drop-shadow">{row.codeProduitGen}</span></div>
-                  <div className="text-sm text-gray-300">Code Dims: <span className="font-semibold text-white drop-shadow">{row.codeProduitDims}</span></div>
-                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md mt-2">
-                    <span className="text-xs text-gray-400">Quantité vendue</span>
-                    <span className="font-bold text-lg text-white drop-shadow">{row.quantite}</span>
-                  </div>
-                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md mt-2">
-                    <span className="text-xs text-gray-400">Prix Vente</span>
-                    <span className="font-bold text-lg text-blue-400 drop-shadow">{row.prixVente} DH</span>
-                  </div>
-                  <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md mt-2">
-                    <span className="text-xs text-gray-400">Total</span>
-                    <span className="font-bold text-lg text-blue-200 drop-shadow">{row.total} DH</span>
-                  </div>
-                  <div className="text-xs text-gray-200 bg-gray-800 rounded px-3 py-1 shadow mt-3">Numéro Produit: {row.numProduit}</div>
+        
+        {sales.length === 0 && !loading ? (
+          <div className="text-center text-zinc-400">Aucune vente trouvée</div>
+        ) : (
+          <>
+            <div className="bg-zinc-900 rounded-lg shadow overflow-hidden border border-zinc-700">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-zinc-700 hover:bg-zinc-800">
+                    <TableHead 
+                      className="text-zinc-200 font-semibold cursor-pointer hover:text-white"
+                      onClick={() => handleSort('designation')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Produit
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-zinc-200 font-semibold cursor-pointer hover:text-white"
+                      onClick={() => handleSort('codeProduitGen')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Code Produit
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-zinc-200 font-semibold cursor-pointer hover:text-white"
+                      onClick={() => handleSort('codeProduitDims')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Code Dims
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-zinc-200 font-semibold cursor-pointer hover:text-white"
+                      onClick={() => handleSort('quantite')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Quantité
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-zinc-200 font-semibold cursor-pointer hover:text-white"
+                      onClick={() => handleSort('prixVente')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Prix Vente
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-zinc-200 font-semibold cursor-pointer hover:text-white"
+                      onClick={() => handleSort('total')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Total
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="text-zinc-200 font-semibold cursor-pointer hover:text-white"
+                      onClick={() => handleSort('numProduit')}
+                    >
+                      <div className="flex items-center gap-2">
+                        N° Produit
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentSales.map((row, idx) => (
+                    <TableRow key={idx} className="border-zinc-700 hover:bg-zinc-800 text-white">
+                      <TableCell className="font-medium text-blue-400">{row.designation}</TableCell>
+                      <TableCell className="text-zinc-300">{row.codeProduitGen}</TableCell>
+                      <TableCell className="text-zinc-300">{row.codeProduitDims}</TableCell>
+                      <TableCell className="text-center text-white font-medium">{row.quantite}</TableCell>
+                      <TableCell className="text-right text-zinc-300">{row.prixVente} DH</TableCell>
+                      <TableCell className="text-right font-semibold text-blue-200">{row.total} DH</TableCell>
+                      <TableCell className="text-zinc-400">{row.numProduit}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-4 bg-zinc-900 p-4 rounded border border-zinc-700">
+                <div className="text-zinc-300 text-sm">
+                  Affichage de {startIndex + 1} à {Math.min(endIndex, sortedSales.length)} sur {sortedSales.length} ventes
                 </div>
-              ))
-          )}
-        </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className="bg-zinc-800 border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Précédent
+                  </Button>
+                  
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNumber;
+                      if (totalPages <= 5) {
+                        pageNumber = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNumber = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNumber = totalPages - 4 + i;
+                      } else {
+                        pageNumber = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNumber}
+                          variant={currentPage === pageNumber ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => goToPage(pageNumber)}
+                          className={
+                            currentPage === pageNumber
+                              ? "bg-blue-600 text-white hover:bg-blue-700"
+                              : "bg-zinc-800 border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                          }
+                        >
+                          {pageNumber}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="bg-zinc-800 border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                  >
+                    Suivant
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="text-zinc-300 text-sm">
+                  Page {currentPage} sur {totalPages}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </DashboardLayout>
   );
