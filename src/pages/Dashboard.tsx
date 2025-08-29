@@ -193,36 +193,36 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in px-2 sm:px-4">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
               Vue d'ensemble des performances de vos magasins
             </p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-4">
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-               <CalendarDateRangePicker
-  date={dateRange}
-  onDateChange={(range) => {
-    if (range.from && range.to) setDateRange(range);
-  }}
-  className="w-64"
-/>
-              <Button
-  variant="secondary"
-  onClick={() => setDateRange(getDefaultDateRange())}
-  className="h-10"
->
-  Réinitialiser Dates
-</Button>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+                <CalendarDateRangePicker
+                  date={dateRange}
+                  onDateChange={(range) => {
+                    if (range.from && range.to) setDateRange(range);
+                  }}
+                  className="w-full sm:w-64"
+                />
+                <Button
+                  variant="secondary"
+                  onClick={() => setDateRange(getDefaultDateRange())}
+                  className="h-10 w-full sm:w-auto"
+                >
+                  Réinitialiser Dates
+                </Button>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
                 <Select value={selectedStore} onValueChange={setSelectedStore}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Sélectionner un magasin" />
                   </SelectTrigger>
                   <SelectContent>
@@ -237,7 +237,7 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
                 <Button
                   variant="secondary"
                   onClick={() => setSelectedStore('ALL')}
-                  className="h-10"
+                  className="h-10 w-full sm:w-auto"
                 >
                   Réinitialiser Magasin
                 </Button>
@@ -247,6 +247,7 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
               onClick={refreshData} 
               disabled={refreshing}
               variant="outline"
+              className="w-full sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
               Actualiser
@@ -255,7 +256,7 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
         </div>
 
         {/* Metrics Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <MetricCard
             title="Chiffre d'Affaires"
             value={totalCA.toLocaleString()}
@@ -295,30 +296,30 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
         </div>
 
         {/* Charts */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
           {/* Evolution CA Chart */}
           <Card className="shadow-elegant">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-base sm:text-lg md:text-xl">
                 <TrendingUp className="h-5 w-5" />
                 <span>Évolution du Chiffre d'Affaires</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm md:text-base">
                 Évolution quotidienne sur les 30 derniers jours
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
                   <XAxis 
                     dataKey="date" 
                     stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
+                    fontSize={10}
                   />
                   <YAxis 
                     stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
+                    fontSize={10}
                     tickFormatter={(value) => `${value.toLocaleString()} DH`}
                   />
                   <Tooltip 
@@ -345,20 +346,20 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
           {/* Store Performance */}
           <Card className="shadow-elegant">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-base sm:text-lg md:text-xl">
                 <Store className="h-5 w-5" />
                 <span>Performance par Magasin</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm md:text-base">
                 Classement des magasins par CA
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {performanceList.map((store, index) => (
-                  <div key={store.magasinCode} className="flex items-center justify-between">
+                  <div key={store.magasinCode} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
                         index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
                         index === 1 ? 'bg-gray-500/20 text-gray-400' :
                         index === 2 ? 'bg-orange-500/20 text-orange-500' :
@@ -367,17 +368,17 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{store.magasinNom}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-medium text-foreground text-xs sm:text-sm">{store.magasinNom}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           {store.tickets} tickets
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-foreground">
+                      <p className="font-bold text-foreground text-xs sm:text-sm">
                         {store.ca.toLocaleString()} DH
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {store.panierMoyen.toFixed(2)} DH/panier
                       </p>
                     </div>
@@ -391,7 +392,7 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
         {/* Recent Activity */}
         <Card className="shadow-elegant">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+            <CardTitle className="flex items-center space-x-2 text-base sm:text-lg md:text-xl">
               <Calendar className="h-5 w-5" />
               <span>Activité Récente</span>
             </CardTitle>
@@ -399,17 +400,17 @@ const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => getDe
           <CardContent>
             <div className="space-y-4">
               {dashboardData.slice(0, 3).map((item, index) => (
-                <div key={index} className="flex items-center space-x-4 p-3 rounded-lg bg-muted/30">
-                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <div key={index} className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 p-3 rounded-lg bg-muted/30">
+                  <div className="w-2 h-2 rounded-full bg-primary mb-2 sm:mb-0"></div>
                   <div className="flex-1">
-                    <p className="font-medium text-foreground">
+                    <p className="font-medium text-foreground text-xs sm:text-sm">
                       Nouvelle vente - {item.magasinNom}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       CA: {item.ca.toLocaleString()} DH • {item.tickets} tickets
                     </p>
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-0">
                     Il y a {Math.floor(Math.random() * 60)} min
                   </div>
                 </div>
