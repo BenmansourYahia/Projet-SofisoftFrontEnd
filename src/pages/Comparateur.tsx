@@ -269,35 +269,35 @@ export const Comparateur: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in px-2 sm:px-4 md:px-8 lg:px-12">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Comparateur</h1>
-          <p className="text-muted-foreground">
+        <div className="pt-2 pb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Comparateur</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Analysez et comparez les performances de vos magasins
           </p>
         </div>
 
         {/* Enhanced Period Comparison with Multiple Stores */}
-        <div className="grid gap-6">
+        <div className="grid gap-4 sm:gap-6">
           <Card className="shadow-elegant">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
                 <Calendar className="h-5 w-5" />
                 <span>Comparaison de Périodes - Multi-Magasins</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Comparez les performances de plusieurs magasins sur deux périodes différentes
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {/* Store Selection */}
               <div>
                 <Label className="text-base font-semibold">Magasins à analyser (maximum 2)</Label>
-                <p className="text-sm text-muted-foreground mb-3">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                   Sélectionnez jusqu'à 2 magasins pour comparer leurs performances
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 mt-2">
                   {user?.magasins?.map((store) => {
                     const isSelected = selectedStores.includes(store.code);
                     const isDisabled = !isSelected && selectedStores.length >= 2;
@@ -332,19 +332,21 @@ export const Comparateur: React.FC = () => {
               </div>
 
               {/* Period Selection */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-border">
-                <div className="space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 pt-4 border-t border-border">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
                     <Label className="text-base font-semibold">Période à analyser</Label>
-                    <CalendarDateRangePicker
-                      date={period1}
-                      onDateChange={setPeriod1}
-                    />
+                    <div className="mt-1">
+                      <CalendarDateRangePicker
+                        date={period1}
+                        onDateChange={setPeriod1}
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label className="text-base font-semibold">Comparer avec</Label>
                     <select 
-                      className="w-full mt-1 p-2 border border-border rounded-md bg-background"
+                      className="w-full mt-1 p-2 border border-border rounded-md bg-background text-xs sm:text-sm"
                       value={comparisonType}
                       onChange={(e) => setComparisonType(e.target.value)}
                     >
@@ -355,10 +357,10 @@ export const Comparateur: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="p-4 bg-muted/30 rounded-lg border border-border">
+                <div className="p-2 sm:p-4 bg-muted/30 rounded-lg border border-border">
                   <Label className="text-base font-semibold text-muted-foreground">Période 2 (calculée automatiquement)</Label>
-                  <div className="mt-2 space-y-2">
-                    <p className="text-sm font-medium">
+                  <div className="mt-2 space-y-1 sm:space-y-2">
+                    <p className="text-xs sm:text-sm font-medium">
                       📅 {format(period2.from, 'dd/MM/yyyy')} - {format(period2.to, 'dd/MM/yyyy')}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -371,18 +373,18 @@ export const Comparateur: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-border">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border">
                 <Button 
                   onClick={comparePeriods} 
                   disabled={periodLoading || selectedStores.length === 0}
-                  className="flex-1"
+                  className="w-full sm:flex-1"
                 >
                   {periodLoading ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   ) : (
                     <Calendar className="h-4 w-4 mr-2" />
                   )}
-                  Analyser les Magasins ({selectedStores.length} sélectionné{selectedStores.length > 1 ? 's' : ''})
+                  <span className="text-xs sm:text-base">Analyser les Magasins ({selectedStores.length} sélectionné{selectedStores.length > 1 ? 's' : ''})</span>
                 </Button>
                 <Button 
                   variant="secondary"
@@ -392,9 +394,9 @@ export const Comparateur: React.FC = () => {
                     setComparisonType('month');
                     setPeriodComparison(null);
                   }}
-                  className="px-6"
+                  className="w-full sm:px-6"
                 >
-                  Réinitialiser
+                  <span className="text-xs sm:text-base">Réinitialiser</span>
                 </Button>
               </div>
             </CardContent>
@@ -403,7 +405,7 @@ export const Comparateur: React.FC = () => {
 
         {/* Period Comparison Results for Multiple Stores */}
         {Array.isArray(periodComparison) && periodComparison.length > 0 && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Store Performance Cards */}
             <Card className="shadow-elegant">
               <CardHeader>
@@ -413,7 +415,7 @@ export const Comparateur: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                   {periodComparison.map((result: any, idx: number) => {
                     if (!result.data || !Array.isArray(result.data) || result.data.length !== 2) return null;
                     
@@ -428,19 +430,19 @@ export const Comparateur: React.FC = () => {
                     const panierDiff = period1Data?.panierMoyen - period2Data?.panierMoyen;
 
                     return (
-                      <div key={result.storeCode} className="rounded-2xl shadow-elegant bg-card border border-border overflow-hidden">
+                      <div key={result.storeCode} className="rounded-2xl shadow-elegant bg-card border border-border overflow-hidden min-w-[260px]">
                         {/* Store Header */}
-                        <div className="bg-primary/10 p-4 border-b border-border">
-                          <h3 className="font-bold text-lg text-primary">{storeName}</h3>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="bg-primary/10 p-2 sm:p-4 border-b border-border">
+                          <h3 className="font-bold text-base sm:text-lg text-primary">{storeName}</h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             {format(period1.from, 'dd/MM/yy', { locale: fr })} - {format(period1.to, 'dd/MM/yy', { locale: fr })} vs {format(period2.from, 'dd/MM/yy', { locale: fr })} - {format(period2.to, 'dd/MM/yy', { locale: fr })}
                           </p>
                         </div>
 
                         {/* Performance Metrics */}
-                        <div className="p-4 space-y-4">
+                        <div className="p-2 sm:p-4 space-y-2 sm:space-y-4">
                           {/* CA Comparison */}
-                          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
                             <div>
                               <span className="text-sm font-medium text-muted-foreground">Chiffre d'Affaires</span>
                               <div className="flex items-center gap-2 mt-1">
@@ -454,7 +456,7 @@ export const Comparateur: React.FC = () => {
                           </div>
 
                           {/* Tickets Comparison */}
-                          <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
                             <div>
                               <span className="text-sm font-medium text-muted-foreground">Nombre de Tickets</span>
                               <div className="flex items-center gap-2 mt-1">
@@ -468,7 +470,7 @@ export const Comparateur: React.FC = () => {
                           </div>
 
                           {/* Quantity Comparison */}
-                          <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
                             <div>
                               <span className="text-sm font-medium text-muted-foreground">Quantité</span>
                               <div className="flex items-center gap-2 mt-1">
@@ -482,7 +484,7 @@ export const Comparateur: React.FC = () => {
                           </div>
 
                           {/* Panier Moyen Comparison */}
-                          <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 sm:p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
                             <div>
                               <span className="text-sm font-medium text-muted-foreground">Panier Moyen</span>
                               <div className="flex items-center gap-2 mt-1">
@@ -511,9 +513,9 @@ export const Comparateur: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-6">
+                <div className="grid gap-4 sm:gap-6">
                   {/* Ecarts Analysis - Full Width */}
-                  <div className="h-80">
+                  <div className="h-80 min-w-[260px]">
                     <h4 className="font-semibold mb-4 text-center">Écarts de Performance entre Magasins</h4>
                     <div className="space-y-4 h-full overflow-y-auto">
                       {periodComparison.length > 1 && (() => {
@@ -534,7 +536,7 @@ export const Comparateur: React.FC = () => {
                         const worst = stores[stores.length - 1];
 
                         return (
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
                             {/* CA Ecart */}
                             <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
                               <div className="flex justify-between items-center mb-2">
@@ -600,10 +602,10 @@ export const Comparateur: React.FC = () => {
                 </div>
 
                 {/* Performance Table */}
-                <div className="mt-6">
-                  <h4 className="font-semibold mb-4">Tableau de Classement Détaillé</h4>
+                <div className="mt-4 sm:mt-6">
+                  <h4 className="font-semibold mb-2 sm:mb-4">Tableau de Classement Détaillé</h4>
                   <div className="overflow-x-auto">
-                    <table className="w-full border-collapse bg-card rounded-lg overflow-hidden shadow-sm">
+                    <table className="min-w-[520px] w-full border-collapse bg-card rounded-lg overflow-hidden shadow-sm text-xs sm:text-sm">
                       <thead>
                         <tr className="bg-primary/10 border-b border-primary/20">
                           <th className="p-4 text-left font-semibold text-primary">Rang</th>
