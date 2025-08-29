@@ -281,73 +281,79 @@ const Stock: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6 animate-fade-in px-1 sm:px-4">
+        <div className="flex flex-col gap-2 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Stock Produits</h1>
-            <p className="text-muted-foreground">Vue globale sur tous les produits dans le stock </p>
+            <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-foreground">Stock Produits</h1>
+            <p className="text-xs sm:text-base md:text-lg text-muted-foreground">Vue globale sur tous les produits dans le stock </p>
           </div>
         </div>
 
         {/* Magasin Selector, Code Bar Search, Sorting, and Search for Table 1 */}
-        <div className="flex items-center gap-4 mb-4">
-          <label className="font-medium">Liste Magasins</label>
-          <Select value={selectedMagasin} onValueChange={setSelectedMagasin}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Tous les magasins" />
-            </SelectTrigger>
-            <SelectContent>
-              {magasins.map(magasin => (
-                <SelectItem key={magasin} value={magasin}>{magasin === 'all' ? 'Tous les magasins' : magasin}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={() => setSelectedMagasin('all')} variant="secondary">
-            Réinitialiser Magasin
-          </Button>
-          <label className="font-medium">Rechercher par code-barres</label>
-          <Input
-            value={codeBarSearch}
-            onChange={e => setCodeBarSearch(e.target.value)}
-            className="w-40"
-            placeholder="Code-barres..."
-            onKeyDown={e => {
-              if (e.key === 'Enter') fetchProductsByCodeBar(codeBarSearch);
-            }}
-          />
-          <Button onClick={() => fetchProductsByCodeBar(codeBarSearch)} variant="outline">
-            <Search className="h-4 w-4 mr-2" />
-            Rechercher
-          </Button>
-          <Button onClick={() => {
-            setCodeBarSearch('');
-            setLoading(true);
-            fetch('http://localhost:8080/StockByProduct', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ isByBarcode: false })
-            })
-              .then(res => res.json())
-              .then(data => {
-                let produits: any[] = [];
-                try {
-                  const parsed = JSON.parse(JSON.parse(data.data).data);
-                  produits = Array.isArray(parsed) ? parsed : [];
-                } catch (e) {
-                  produits = [];
-                }
-                setAllProducts(produits);
-                setMagasins(['all', ...Array.from(new Set(produits.map(p => p.magasin).filter(Boolean)))]);
-                // Do NOT reset magasin filter
-              })
-              .finally(() => setLoading(false));
-          }} variant="secondary">
-            Réinitialiser Code-barres
-          </Button>
+        <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-row sm:items-center sm:gap-4 mb-4">
+          <div className="flex flex-col gap-1 w-full sm:w-auto">
+            <label className="font-medium text-xs sm:text-sm md:text-base">Liste Magasins</label>
+            <Select value={selectedMagasin} onValueChange={setSelectedMagasin}>
+              <SelectTrigger className="w-full sm:w-40">
+                <SelectValue placeholder="Tous les magasins" />
+              </SelectTrigger>
+              <SelectContent>
+                {magasins.map(magasin => (
+                  <SelectItem key={magasin} value={magasin}>{magasin === 'all' ? 'Tous les magasins' : magasin}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={() => setSelectedMagasin('all')} variant="secondary" className="w-full sm:w-auto mt-1">
+              Réinitialiser Magasin
+            </Button>
+          </div>
+          <div className="flex flex-col gap-1 w-full sm:w-auto">
+            <label className="font-medium text-xs sm:text-sm md:text-base">Rechercher par code-barres</label>
+            <Input
+              value={codeBarSearch}
+              onChange={e => setCodeBarSearch(e.target.value)}
+              className="w-full sm:w-40"
+              placeholder="Code-barres..."
+              onKeyDown={e => {
+                if (e.key === 'Enter') fetchProductsByCodeBar(codeBarSearch);
+              }}
+            />
+            <div className="flex gap-1 mt-1">
+              <Button onClick={() => fetchProductsByCodeBar(codeBarSearch)} variant="outline" className="w-full sm:w-auto">
+                <Search className="h-4 w-4 mr-2" />
+                Rechercher
+              </Button>
+              <Button onClick={() => {
+                setCodeBarSearch('');
+                setLoading(true);
+                fetch('http://localhost:8080/StockByProduct', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ isByBarcode: false })
+                })
+                  .then(res => res.json())
+                  .then(data => {
+                    let produits: any[] = [];
+                    try {
+                      const parsed = JSON.parse(JSON.parse(data.data).data);
+                      produits = Array.isArray(parsed) ? parsed : [];
+                    } catch (e) {
+                      produits = [];
+                    }
+                    setAllProducts(produits);
+                    setMagasins(['all', ...Array.from(new Set(produits.map(p => p.magasin).filter(Boolean)))]);
+                    // Do NOT reset magasin filter
+                  })
+                  .finally(() => setLoading(false));
+              }} variant="secondary" className="w-full sm:w-auto">
+                Réinitialiser Code-barres
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Table 1: Magasin/CodeBar/Search/Sort Filtered Result */}
-        <Card className="shadow-elegant border-primary border-2">
+        <Card className="shadow-elegant border-primary border-2 overflow-x-auto rounded-md">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>
@@ -379,8 +385,8 @@ const Stock: React.FC = () => {
                 <p>Aucun résultat trouvé pour ce code-barres ou magasin.</p>
               </div>
             ) : (
-              <div className="rounded-md border">
-                <Table>
+              <div className="rounded-md border overflow-x-auto">
+                <Table className="min-w-[400px] sm:min-w-[600px] text-xs sm:text-sm">
                   <TableHeader>
                     <TableRow>
                       <TableHead 
@@ -461,14 +467,14 @@ const Stock: React.FC = () => {
                 
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-4 p-4 border-t">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-4 p-4 border-t text-xs sm:text-sm">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span>
                         Affichage de {startIndex + 1} à {Math.min(endIndex, filteredProducts.length)} sur {filteredProducts.length} produits
                       </span>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap text-xs sm:text-sm">
                       <Button
                         variant="outline"
                         size="sm"
@@ -486,7 +492,7 @@ const Stock: React.FC = () => {
                         ‹ Précédent
                       </Button>
                       
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 flex-wrap text-xs sm:text-sm">
                         {(() => {
                           const maxVisiblePages = 5;
                           const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
@@ -530,7 +536,7 @@ const Stock: React.FC = () => {
                       </Button>
                     </div>
                     
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       Page {currentPage} sur {totalPages}
                     </div>
                   </div>
@@ -540,8 +546,8 @@ const Stock: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Table 2: Global Stock List */}
-        <Card className="shadow-elegant border-primary border-2">
+  {/* Table 2: Global Stock List */}
+  <Card className="shadow-elegant border-primary border-2 overflow-x-auto rounded-md">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>
@@ -568,8 +574,8 @@ const Stock: React.FC = () => {
           </CardHeader>
           <CardContent>
             {/* Filtres */}
-            <div className="flex items-center gap-4 mb-6">
-              <div className="relative flex-1 max-w-sm">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 mb-6">
+              <div className="relative flex-1 max-w-full sm:max-w-sm">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   value={search}
@@ -593,8 +599,8 @@ const Stock: React.FC = () => {
                 <p>Aucun produit trouvé.</p>
               </div>
             ) : (
-              <div className="rounded-md border">
-                <Table>
+              <div className="rounded-md border overflow-x-auto">
+                <Table className="min-w-[400px] sm:min-w-[600px] text-xs sm:text-sm">
                   <TableHeader>
                     <TableRow>
                       <TableHead 
@@ -671,14 +677,14 @@ const Stock: React.FC = () => {
                 
                 {/* Pagination Controls for Table 2 */}
                 {totalPages2 > 1 && (
-                  <div className="flex items-center justify-between mt-4 p-4 border-t">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mt-4 p-4 border-t text-xs sm:text-sm">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span>
                         Affichage de {startIndex2 + 1} à {Math.min(endIndex2, filteredGlobalStock.length)} sur {filteredGlobalStock.length} produits
                       </span>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap text-xs sm:text-sm">
                       <Button
                         variant="outline"
                         size="sm"
@@ -696,7 +702,7 @@ const Stock: React.FC = () => {
                         ‹ Précédent
                       </Button>
                       
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 flex-wrap text-xs sm:text-sm">
                         {(() => {
                           const maxVisiblePages = 5;
                           const startPage = Math.max(1, currentPage2 - Math.floor(maxVisiblePages / 2));
@@ -740,7 +746,7 @@ const Stock: React.FC = () => {
                       </Button>
                     </div>
                     
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       Page {currentPage2} sur {totalPages2}
                     </div>
                   </div>
