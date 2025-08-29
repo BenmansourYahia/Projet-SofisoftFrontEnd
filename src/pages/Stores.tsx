@@ -106,41 +106,41 @@ export const Stores: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6 animate-fade-in px-2 sm:px-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Magasins</h1>
-            <p className="text-muted-foreground">Liste et informations des magasins</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">Magasins</h1>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground">Liste et informations des magasins</p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-4">
             <input
               type="text"
               placeholder="Rechercher par nom ou code..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="input input-bordered w-64 px-3 py-2 rounded border focus:outline-none text-black"
+              className="input input-bordered w-full sm:w-64 px-3 py-2 rounded border focus:outline-none text-black"
             />
             {/* Power BI-style date range slicer */}
-            <div className="flex flex-col items-center p-2 bg-black rounded-lg shadow-lg min-w-[340px] border border-blue-400" style={{ boxShadow: '0 0 12px #38bdf8' }}>
-              <div className="font-semibold mb-1">Période</div>
-              <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-col items-center p-2 bg-black rounded-lg shadow-lg min-w-full sm:min-w-[340px] border border-blue-400" style={{ boxShadow: '0 0 12px #38bdf8' }}>
+              <div className="font-semibold mb-1 text-xs sm:text-sm md:text-base">Période</div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 mb-2 w-full">
                 <input
                   type="date"
                   value={new Date(dateRange[0]).toISOString().slice(0, 10)}
                   min={new Date(dateMin).toISOString().slice(0, 10)}
                   max={new Date(dateRange[1]).toISOString().slice(0, 10)}
                   onChange={e => setDateRange([new Date(e.target.value).getTime(), dateRange[1]])}
-                  className="w-36 px-2 py-1 rounded border border-gray-700 bg-gray-900 text-white font-bold focus:border-primary focus:ring-2 focus:ring-primary"
+                  className="w-full sm:w-36 px-2 py-1 rounded border border-gray-700 bg-gray-900 text-white font-bold focus:border-primary focus:ring-2 focus:ring-primary"
                   style={{ boxShadow: '0 0 0 2px #0ea5e9' }}
                 />
-                <span>→</span>
+                <span className="hidden sm:inline">→</span>
                 <input
                   type="date"
                   value={new Date(dateRange[1]).toISOString().slice(0, 10)}
                   min={new Date(dateRange[0]).toISOString().slice(0, 10)}
                   max={new Date(dateMax).toISOString().slice(0, 10)}
                   onChange={e => setDateRange([dateRange[0], new Date(e.target.value).getTime()])}
-                  className="w-36 px-2 py-1 rounded border border-gray-700 bg-gray-900 text-white font-bold focus:border-primary focus:ring-2 focus:ring-primary"
+                  className="w-full sm:w-36 px-2 py-1 rounded border border-gray-700 bg-gray-900 text-white font-bold focus:border-primary focus:ring-2 focus:ring-primary"
                   style={{ boxShadow: '0 0 0 2px #0ea5e9' }}
                 />
               </div>
@@ -163,46 +163,46 @@ export const Stores: React.FC = () => {
               />
               {/* Removed min/max labels for a cleaner look */}
             </div>
-            <Button onClick={refreshData} disabled={refreshing} variant="outline">
+            <Button onClick={refreshData} disabled={refreshing} variant="outline" className="w-full sm:w-auto">
               <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
               Actualiser
             </Button>
           </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filteredMagasins.map((store) => (
             <Card key={store.codeMagasin} className="shadow-2xl bg-gradient-to-br from-black via-gray-900 to-gray-800 border border-gray-700 rounded-2xl">
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
                     <Store className="h-6 w-6 text-primary drop-shadow-lg" />
-                    <span className="text-lg font-bold text-white tracking-tight drop-shadow">{store.nomMagasin}</span>
+                    <span className="text-base sm:text-lg md:text-xl font-bold text-white tracking-tight drop-shadow">{store.nomMagasin}</span>
                   </div>
-                  <span className="text-xs text-gray-300 font-mono drop-shadow">{store.codeMagasin}</span>
+                  <span className="text-xs sm:text-sm md:text-base text-gray-300 font-mono drop-shadow">{store.codeMagasin}</span>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="grid grid-cols-2 gap-3 mt-2">
                   <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md">
-                    <span className="text-xs text-gray-400">CA</span>
-                    <span className="font-bold text-lg text-white drop-shadow">{store.montantTTC?.toLocaleString() || 0}€</span>
+                    <span className="text-xs sm:text-sm md:text-base text-gray-400">CA</span>
+                    <span className="font-bold text-base sm:text-lg md:text-xl text-white drop-shadow">{store.montantTTC?.toLocaleString() || 0}€</span>
                   </div>
                   <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md">
-                    <span className="text-xs text-gray-400">Tickets</span>
-                    <span className="font-bold text-lg text-white drop-shadow">{store.nombreTickets?.toLocaleString() || 0}</span>
+                    <span className="text-xs sm:text-sm md:text-base text-gray-400">Tickets</span>
+                    <span className="font-bold text-base sm:text-lg md:text-xl text-white drop-shadow">{store.nombreTickets?.toLocaleString() || 0}</span>
                   </div>
                   <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md">
-                    <span className="text-xs text-gray-400">Quantité</span>
-                    <span className="font-bold text-lg text-white drop-shadow">{store.quantite?.toLocaleString() || 0}</span>
+                    <span className="text-xs sm:text-sm md:text-base text-gray-400">Quantité</span>
+                    <span className="font-bold text-base sm:text-lg md:text-xl text-white drop-shadow">{store.quantite?.toLocaleString() || 0}</span>
                   </div>
                   <div className="rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 p-3 flex flex-col items-center border border-gray-700 shadow-md">
-                    <span className="text-xs text-gray-400">Panier Moyen</span>
-                    <span className="font-bold text-lg text-white drop-shadow">{store.panierMoyen?.toFixed(2) || 0}€</span>
+                    <span className="text-xs sm:text-sm md:text-base text-gray-400">Panier Moyen</span>
+                    <span className="font-bold text-base sm:text-lg md:text-xl text-white drop-shadow">{store.panierMoyen?.toFixed(2) || 0}€</span>
                   </div>
                 </div>
                 {store.gerant && store.gerant !== 'N/A' && (
                   <div className="mt-3 flex justify-center">
-                    <span className="text-xs text-gray-200 bg-gray-800 rounded px-3 py-1 shadow">Gérant: {store.gerant}</span>
+                    <span className="text-xs sm:text-sm md:text-base text-gray-200 bg-gray-800 rounded px-3 py-1 shadow">Gérant: {store.gerant}</span>
                   </div>
                 )}
               </CardContent>
