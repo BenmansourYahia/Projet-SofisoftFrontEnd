@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Configuration d'IP dynamique
 const getServerIP = (): string => {
-  return localStorage.getItem('serverIP') || '192.168.1.10';
+  return localStorage.getItem('serverIP') || '192.168.2.90';
 };
 
 const getServerPort = (): string => {
